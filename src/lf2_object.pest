@@ -1,0 +1,151 @@
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+Float = ${ "-"? ~ ASCII_DIGIT+ ~ "." ~ ASCII_DIGIT* }
+Path = ${ PathSegment ~ (PathSeparator ~ PathSegment )* }
+PathSeparator = { "/" | "\\" }
+PathSymChars = { "_" | "-" | "." }
+PathSegment = ${ (ASCII_ALPHA | PathSymChars) ~ (ASCII_ALPHANUMERIC | PathSymChars)* }
+U32 = ${ ASCII_DIGIT+ }
+ObjectNameSymChars = { "_" | "-" | "." }
+ObjectName = ${ (ASCII_ALPHA | ObjectNameSymChars) ~ (ASCII_ALPHANUMERIC | ObjectNameSymChars)* }
+
+Object = {
+    SOI
+    ~ Header
+    ~ ANY*
+    ~ EOI
+}
+
+Header = { HeaderBegin ~ HeaderData ~ HeaderEnd }
+HeaderBegin = _{ "<bmp_begin>" }
+HeaderData = { HeaderField* }
+HeaderEnd = _{ "<bmp_end>" }
+HeaderField = {
+    HeaderFieldName
+    | HeaderFieldHead
+    | HeaderFieldSmall
+    | HeaderFieldFile
+    | HeaderFieldWalkingFrameRate
+    | HeaderFieldWalkingSpeed
+    | HeaderFieldWalkingSpeedz
+    | HeaderFieldRunningFrameRate
+    | HeaderFieldRunningSpeed
+    | HeaderFieldRunningSpeedz
+    | HeaderFieldHeavyWalkingSpeed
+    | HeaderFieldHeavyWalkingSpeedz
+    | HeaderFieldHeavyRunningSpeed
+    | HeaderFieldHeavyRunningSpeedz
+    | HeaderFieldJumpHeight
+    | HeaderFieldJumpDistance
+    | HeaderFieldJumpDistancez
+    | HeaderFieldDashHeight
+    | HeaderFieldDashDistance
+    | HeaderFieldDashDistancez
+    | HeaderFieldRowingHeight
+    | HeaderFieldRowingDistance
+}
+HeaderFieldName = { HeaderFieldNameKey ~ HeaderFieldNameValue }
+HeaderFieldNameKey = _{ "name:" }
+HeaderFieldNameValue = { ObjectName }
+
+HeaderFieldHead = { HeaderFieldHeadKey ~ HeaderFieldHeadValue }
+HeaderFieldHeadKey = _{ "head:" }
+HeaderFieldHeadValue = { Path }
+
+HeaderFieldSmall = { HeaderFieldSmallKey ~ HeaderFieldSmallValue }
+HeaderFieldSmallKey = _{ "small:" }
+HeaderFieldSmallValue = { Path }
+
+HeaderFieldFile = { HeaderFieldFilePath ~ HeaderFieldFileW ~ HeaderFieldFileH ~ HeaderFieldFileRow ~ HeaderFieldFileCol }
+
+HeaderFieldFilePath = _{ HeaderFieldFilePathKey ~ HeaderFieldFilePathValue }
+HeaderFieldFilePathKey = _{ "file" ~ HeaderFieldFilePathNumber? ~ ":" }
+HeaderFieldFilePathValue = { Path }
+HeaderFieldFilePathNumber = _{ "(" ~ ASCII_DIGIT+ ~ ("-" ~ ASCII_DIGIT+)? ~ ")" }
+
+HeaderFieldFileW = { HeaderFieldFileWKey ~ HeaderFieldFileWValue }
+HeaderFieldFileWKey = _{ "w:" }
+HeaderFieldFileWValue = { U32 }
+
+HeaderFieldFileH = { HeaderFieldFileHKey ~ HeaderFieldFileHValue }
+HeaderFieldFileHKey = _{ "h:" }
+HeaderFieldFileHValue = { U32 }
+
+HeaderFieldFileRow = { HeaderFieldFileRowKey ~ HeaderFieldFileRowValue }
+HeaderFieldFileRowKey = _{ "row:" }
+HeaderFieldFileRowValue = { U32 }
+
+HeaderFieldFileCol = { HeaderFieldFileColKey ~ HeaderFieldFileColValue }
+HeaderFieldFileColKey = _{ "col:" }
+HeaderFieldFileColValue = { U32 }
+
+HeaderFieldWalkingFrameRate = { HeaderFieldWalkingFrameRateKey ~ HeaderFieldWalkingFrameRateValue }
+HeaderFieldWalkingFrameRateKey = _{ "walking_frame_rate" }
+HeaderFieldWalkingFrameRateValue = { U32 }
+
+HeaderFieldWalkingSpeed = { HeaderFieldWalkingSpeedKey ~ HeaderFieldWalkingSpeedValue }
+HeaderFieldWalkingSpeedKey = _{ "walking_speed" }
+HeaderFieldWalkingSpeedValue = { Float }
+
+HeaderFieldWalkingSpeedz = { HeaderFieldWalkingSpeedzKey ~ HeaderFieldWalkingSpeedzValue }
+HeaderFieldWalkingSpeedzKey = _{ "walking_speedz" }
+HeaderFieldWalkingSpeedzValue = { Float }
+
+HeaderFieldRunningFrameRate = { HeaderFieldRunningFrameRateKey ~ HeaderFieldRunningFrameRateValue }
+HeaderFieldRunningFrameRateKey = _{ "running_frame_rate" }
+HeaderFieldRunningFrameRateValue = { U32 }
+
+HeaderFieldRunningSpeed = { HeaderFieldRunningSpeedKey ~ HeaderFieldRunningSpeedValue }
+HeaderFieldRunningSpeedKey = _{ "running_speed" }
+HeaderFieldRunningSpeedValue = { Float }
+
+HeaderFieldRunningSpeedz = { HeaderFieldRunningSpeedzKey ~ HeaderFieldRunningSpeedzValue }
+HeaderFieldRunningSpeedzKey = _{ "running_speedz" }
+HeaderFieldRunningSpeedzValue = { Float }
+
+HeaderFieldHeavyWalkingSpeed = { HeaderFieldHeavyWalkingSpeedKey ~ HeaderFieldHeavyWalkingSpeedValue }
+HeaderFieldHeavyWalkingSpeedKey = _{ "heavy_walking_speed" }
+HeaderFieldHeavyWalkingSpeedValue = { Float }
+
+HeaderFieldHeavyWalkingSpeedz = { HeaderFieldHeavyWalkingSpeedzKey ~ HeaderFieldHeavyWalkingSpeedzValue }
+HeaderFieldHeavyWalkingSpeedzKey = _{ "heavy_walking_speedz" }
+HeaderFieldHeavyWalkingSpeedzValue = { Float }
+
+HeaderFieldHeavyRunningSpeed = { HeaderFieldHeavyRunningSpeedKey ~ HeaderFieldHeavyRunningSpeedValue }
+HeaderFieldHeavyRunningSpeedKey = _{ "heavy_running_speed" }
+HeaderFieldHeavyRunningSpeedValue = { Float }
+
+HeaderFieldHeavyRunningSpeedz = { HeaderFieldHeavyRunningSpeedzKey ~ HeaderFieldHeavyRunningSpeedzValue }
+HeaderFieldHeavyRunningSpeedzKey = _{ "heavy_running_speedz" }
+HeaderFieldHeavyRunningSpeedzValue = { Float }
+
+HeaderFieldJumpHeight = { HeaderFieldJumpHeightKey ~ HeaderFieldJumpHeightValue }
+HeaderFieldJumpHeightKey = _{ "jump_height" }
+HeaderFieldJumpHeightValue = { Float }
+
+HeaderFieldJumpDistance = { HeaderFieldJumpDistanceKey ~ HeaderFieldJumpDistanceValue }
+HeaderFieldJumpDistanceKey = _{ "jump_distance" }
+HeaderFieldJumpDistanceValue = { Float }
+
+HeaderFieldJumpDistancez = { HeaderFieldJumpDistancezKey ~ HeaderFieldJumpDistancezValue }
+HeaderFieldJumpDistancezKey = _{ "jump_distancez" }
+HeaderFieldJumpDistancezValue = { Float }
+
+HeaderFieldDashHeight = { HeaderFieldDashHeightKey ~ HeaderFieldDashHeightValue }
+HeaderFieldDashHeightKey = _{ "dash_height" }
+HeaderFieldDashHeightValue = { Float }
+
+HeaderFieldDashDistance = { HeaderFieldDashDistanceKey ~ HeaderFieldDashDistanceValue }
+HeaderFieldDashDistanceKey = _{ "dash_distance" }
+HeaderFieldDashDistanceValue = { Float }
+
+HeaderFieldDashDistancez = { HeaderFieldDashDistancezKey ~ HeaderFieldDashDistancezValue }
+HeaderFieldDashDistancezKey = _{ "dash_distancez" }
+HeaderFieldDashDistancezValue = { Float }
+
+HeaderFieldRowingHeight = { HeaderFieldRowingHeightKey ~ HeaderFieldRowingHeightValue }
+HeaderFieldRowingHeightKey = _{ "rowing_height" }
+HeaderFieldRowingHeightValue = { Float }
+
+HeaderFieldRowingDistance = { HeaderFieldRowingDistanceKey ~ HeaderFieldRowingDistanceValue }
+HeaderFieldRowingDistanceKey = _{ "rowing_distance" }
+HeaderFieldRowingDistanceValue = { Float }
