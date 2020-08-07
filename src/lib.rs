@@ -9,6 +9,7 @@ pub use crate::{
     object_data_parser::{ObjectDataParser, Rule},
     pic::Pic,
     sprite_file::SpriteFile,
+    wait::Wait,
 };
 
 mod error;
@@ -19,3 +20,4 @@ mod object_data;
 mod object_data_parser;
 mod pic;
 mod sprite_file;
+mod wait;
