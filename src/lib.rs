@@ -7,6 +7,7 @@ pub use crate::{
     header::Header,
     object_data::ObjectData,
     object_data_parser::{ObjectDataParser, Rule},
+    pic::Pic,
     sprite_file::SpriteFile,
 };
 
@@ -16,4 +17,5 @@ mod frame_number_next;
 mod header;
 mod object_data;
 mod object_data_parser;
+mod pic;
 mod sprite_file;
