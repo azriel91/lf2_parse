@@ -14,20 +14,20 @@ pub struct Header {
     file: Vec<SpriteFile>,
     walking_frame_rate: u32,
     walking_speed: f32,
-    walking_speedz: f32,
+    walking_speed_z: f32,
     running_frame_rate: u32,
     running_speed: f32,
-    running_speedz: f32,
+    running_speed_z: f32,
     heavy_walking_speed: f32,
-    heavy_walking_speedz: f32,
+    heavy_walking_speed_z: f32,
     heavy_running_speed: f32,
-    heavy_running_speedz: f32,
+    heavy_running_speed_z: f32,
     jump_height: f32,
     jump_distance: f32,
-    jump_distancez: f32,
+    jump_distance_z: f32,
     dash_height: f32,
     dash_distance: f32,
-    dash_distancez: f32,
+    dash_distance_z: f32,
     rowing_height: f32,
     rowing_distance: f32,
 }
@@ -75,8 +75,8 @@ impl Header {
                     Rule::TagWalkingSpeed => {
                         builder = Self::parse_walking_speed(builder, header_field_pair)?;
                     }
-                    Rule::TagWalkingSpeedz => {
-                        builder = Self::parse_walking_speedz(builder, header_field_pair)?;
+                    Rule::TagWalkingSpeedZ => {
+                        builder = Self::parse_walking_speed_z(builder, header_field_pair)?;
                     }
                     Rule::TagRunningFrameRate => {
                         builder = Self::parse_running_frame_rate(builder, header_field_pair)?;
@@ -84,20 +84,20 @@ impl Header {
                     Rule::TagRunningSpeed => {
                         builder = Self::parse_running_speed(builder, header_field_pair)?;
                     }
-                    Rule::TagRunningSpeedz => {
-                        builder = Self::parse_running_speedz(builder, header_field_pair)?;
+                    Rule::TagRunningSpeedZ => {
+                        builder = Self::parse_running_speed_z(builder, header_field_pair)?;
                     }
                     Rule::TagHeavyWalkingSpeed => {
                         builder = Self::parse_heavy_walking_speed(builder, header_field_pair)?;
                     }
-                    Rule::TagHeavyWalkingSpeedz => {
-                        builder = Self::parse_heavy_walking_speedz(builder, header_field_pair)?;
+                    Rule::TagHeavyWalkingSpeedZ => {
+                        builder = Self::parse_heavy_walking_speed_z(builder, header_field_pair)?;
                     }
                     Rule::TagHeavyRunningSpeed => {
                         builder = Self::parse_heavy_running_speed(builder, header_field_pair)?;
                     }
-                    Rule::TagHeavyRunningSpeedz => {
-                        builder = Self::parse_heavy_running_speedz(builder, header_field_pair)?;
+                    Rule::TagHeavyRunningSpeedZ => {
+                        builder = Self::parse_heavy_running_speed_z(builder, header_field_pair)?;
                     }
                     Rule::TagJumpHeight => {
                         builder = Self::parse_jump_height(builder, header_field_pair)?;
@@ -105,8 +105,8 @@ impl Header {
                     Rule::TagJumpDistance => {
                         builder = Self::parse_jump_distance(builder, header_field_pair)?;
                     }
-                    Rule::TagJumpDistancez => {
-                        builder = Self::parse_jump_distancez(builder, header_field_pair)?;
+                    Rule::TagJumpDistanceZ => {
+                        builder = Self::parse_jump_distance_z(builder, header_field_pair)?;
                     }
                     Rule::TagDashHeight => {
                         builder = Self::parse_dash_height(builder, header_field_pair)?;
@@ -114,8 +114,8 @@ impl Header {
                     Rule::TagDashDistance => {
                         builder = Self::parse_dash_distance(builder, header_field_pair)?;
                     }
-                    Rule::TagDashDistancez => {
-                        builder = Self::parse_dash_distancez(builder, header_field_pair)?;
+                    Rule::TagDashDistanceZ => {
+                        builder = Self::parse_dash_distance_z(builder, header_field_pair)?;
                     }
                     Rule::TagRowingHeight => {
                         builder = Self::parse_rowing_height(builder, header_field_pair)?;
@@ -232,25 +232,25 @@ impl Header {
         )
     }
 
-    fn parse_walking_speedz<'i>(
+    fn parse_walking_speed_z<'i>(
         builder: HeaderBuilder,
         header_field_pair: Pair<'i, Rule>,
     ) -> Result<HeaderBuilder, Error<'i>> {
         ObjectDataParser::parse_as_type(
             builder,
             header_field_pair,
-            Rule::TagWalkingSpeedz,
+            Rule::TagWalkingSpeedZ,
             &[|mut builder, value_pair| {
-                let walking_speedz =
+                let walking_speed_z =
                     value_pair
                         .as_str()
                         .parse()
                         .map_err(|error| Error::ParseFloat {
-                            field: stringify!(walking_speedz),
+                            field: stringify!(walking_speed_z),
                             value_pair,
                             error,
                         })?;
-                builder = builder.walking_speedz(walking_speedz);
+                builder = builder.walking_speed_z(walking_speed_z);
                 Ok(builder)
             }],
         )
@@ -304,25 +304,25 @@ impl Header {
         )
     }
 
-    fn parse_running_speedz<'i>(
+    fn parse_running_speed_z<'i>(
         builder: HeaderBuilder,
         header_field_pair: Pair<'i, Rule>,
     ) -> Result<HeaderBuilder, Error<'i>> {
         ObjectDataParser::parse_as_type(
             builder,
             header_field_pair,
-            Rule::TagRunningSpeedz,
+            Rule::TagRunningSpeedZ,
             &[|mut builder, value_pair| {
-                let running_speedz =
+                let running_speed_z =
                     value_pair
                         .as_str()
                         .parse()
                         .map_err(|error| Error::ParseFloat {
-                            field: stringify!(running_speedz),
+                            field: stringify!(running_speed_z),
                             value_pair,
                             error,
                         })?;
-                builder = builder.running_speedz(running_speedz);
+                builder = builder.running_speed_z(running_speed_z);
                 Ok(builder)
             }],
         )
@@ -352,25 +352,25 @@ impl Header {
         )
     }
 
-    fn parse_heavy_walking_speedz<'i>(
+    fn parse_heavy_walking_speed_z<'i>(
         builder: HeaderBuilder,
         header_field_pair: Pair<'i, Rule>,
     ) -> Result<HeaderBuilder, Error<'i>> {
         ObjectDataParser::parse_as_type(
             builder,
             header_field_pair,
-            Rule::TagHeavyWalkingSpeedz,
+            Rule::TagHeavyWalkingSpeedZ,
             &[|mut builder, value_pair| {
-                let heavy_walking_speedz =
+                let heavy_walking_speed_z =
                     value_pair
                         .as_str()
                         .parse()
                         .map_err(|error| Error::ParseFloat {
-                            field: stringify!(heavy_walking_speedz),
+                            field: stringify!(heavy_walking_speed_z),
                             value_pair,
                             error,
                         })?;
-                builder = builder.heavy_walking_speedz(heavy_walking_speedz);
+                builder = builder.heavy_walking_speed_z(heavy_walking_speed_z);
                 Ok(builder)
             }],
         )
@@ -400,25 +400,25 @@ impl Header {
         )
     }
 
-    fn parse_heavy_running_speedz<'i>(
+    fn parse_heavy_running_speed_z<'i>(
         builder: HeaderBuilder,
         header_field_pair: Pair<'i, Rule>,
     ) -> Result<HeaderBuilder, Error<'i>> {
         ObjectDataParser::parse_as_type(
             builder,
             header_field_pair,
-            Rule::TagHeavyRunningSpeedz,
+            Rule::TagHeavyRunningSpeedZ,
             &[|mut builder, value_pair| {
-                let heavy_running_speedz =
+                let heavy_running_speed_z =
                     value_pair
                         .as_str()
                         .parse()
                         .map_err(|error| Error::ParseFloat {
-                            field: stringify!(heavy_running_speedz),
+                            field: stringify!(heavy_running_speed_z),
                             value_pair,
                             error,
                         })?;
-                builder = builder.heavy_running_speedz(heavy_running_speedz);
+                builder = builder.heavy_running_speed_z(heavy_running_speed_z);
                 Ok(builder)
             }],
         )
@@ -472,25 +472,25 @@ impl Header {
         )
     }
 
-    fn parse_jump_distancez<'i>(
+    fn parse_jump_distance_z<'i>(
         builder: HeaderBuilder,
         header_field_pair: Pair<'i, Rule>,
     ) -> Result<HeaderBuilder, Error<'i>> {
         ObjectDataParser::parse_as_type(
             builder,
             header_field_pair,
-            Rule::TagJumpDistancez,
+            Rule::TagJumpDistanceZ,
             &[|mut builder, value_pair| {
-                let jump_distancez =
+                let jump_distance_z =
                     value_pair
                         .as_str()
                         .parse()
                         .map_err(|error| Error::ParseFloat {
-                            field: stringify!(jump_distancez),
+                            field: stringify!(jump_distance_z),
                             value_pair,
                             error,
                         })?;
-                builder = builder.jump_distancez(jump_distancez);
+                builder = builder.jump_distance_z(jump_distance_z);
                 Ok(builder)
             }],
         )
@@ -544,25 +544,25 @@ impl Header {
         )
     }
 
-    fn parse_dash_distancez<'i>(
+    fn parse_dash_distance_z<'i>(
         builder: HeaderBuilder,
         header_field_pair: Pair<'i, Rule>,
     ) -> Result<HeaderBuilder, Error<'i>> {
         ObjectDataParser::parse_as_type(
             builder,
             header_field_pair,
-            Rule::TagDashDistancez,
+            Rule::TagDashDistanceZ,
             &[|mut builder, value_pair| {
-                let dash_distancez =
+                let dash_distance_z =
                     value_pair
                         .as_str()
                         .parse()
                         .map_err(|error| Error::ParseFloat {
-                            field: stringify!(dash_distancez),
+                            field: stringify!(dash_distance_z),
                             value_pair,
                             error,
                         })?;
-                builder = builder.dash_distancez(dash_distancez);
+                builder = builder.dash_distance_z(dash_distance_z);
                 Ok(builder)
             }],
         )

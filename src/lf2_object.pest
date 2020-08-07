@@ -27,20 +27,20 @@ HeaderTag = {
     | SpriteFile
     | TagWalkingFrameRate
     | TagWalkingSpeed
-    | TagWalkingSpeedz
+    | TagWalkingSpeedZ
     | TagRunningFrameRate
     | TagRunningSpeed
-    | TagRunningSpeedz
+    | TagRunningSpeedZ
     | TagHeavyWalkingSpeed
-    | TagHeavyWalkingSpeedz
+    | TagHeavyWalkingSpeedZ
     | TagHeavyRunningSpeed
-    | TagHeavyRunningSpeedz
+    | TagHeavyRunningSpeedZ
     | TagJumpHeight
     | TagJumpDistance
-    | TagJumpDistancez
+    | TagJumpDistanceZ
     | TagDashHeight
     | TagDashDistance
-    | TagDashDistancez
+    | TagDashDistanceZ
     | TagRowingHeight
     | TagRowingDistance
 }
@@ -150,7 +150,6 @@ WPointTag = {
 }
 WPointEnd = _{ "wpoint_end:" }
 
-
 Frame = { FrameBegin ~ FrameNumber ~ FrameName ~ FrameData ~ FrameEnd }
 FrameBegin = _{ "<frame>" }
 FrameNumber = { Uint }
@@ -247,9 +246,9 @@ TagDashDistance = { TagDashDistanceKey ~ TagDashDistanceValue }
 TagDashDistanceKey = _{ "dash_distance" }
 TagDashDistanceValue = { Float }
 
-TagDashDistancez = { TagDashDistancezKey ~ TagDashDistancezValue }
-TagDashDistancezKey = _{ "dash_distancez" }
-TagDashDistancezValue = { Float }
+TagDashDistanceZ = { TagDashDistanceZKey ~ TagDashDistanceZValue }
+TagDashDistanceZKey = _{ "dash_distancez" }
+TagDashDistanceZValue = { Float }
 
 TagDashHeight = { TagDashHeightKey ~ TagDashHeightValue }
 TagDashHeightKey = _{ "dash_height" }
@@ -296,17 +295,17 @@ TagHeavyRunningSpeed = { TagHeavyRunningSpeedKey ~ TagHeavyRunningSpeedValue }
 TagHeavyRunningSpeedKey = _{ "heavy_running_speed" }
 TagHeavyRunningSpeedValue = { Float }
 
-TagHeavyRunningSpeedz = { TagHeavyRunningSpeedzKey ~ TagHeavyRunningSpeedzValue }
-TagHeavyRunningSpeedzKey = _{ "heavy_running_speedz" }
-TagHeavyRunningSpeedzValue = { Float }
+TagHeavyRunningSpeedZ = { TagHeavyRunningSpeedZKey ~ TagHeavyRunningSpeedZValue }
+TagHeavyRunningSpeedZKey = _{ "heavy_running_speedz" }
+TagHeavyRunningSpeedZValue = { Float }
 
 TagHeavyWalkingSpeed = { TagHeavyWalkingSpeedKey ~ TagHeavyWalkingSpeedValue }
 TagHeavyWalkingSpeedKey = _{ "heavy_walking_speed" }
 TagHeavyWalkingSpeedValue = { Float }
 
-TagHeavyWalkingSpeedz = { TagHeavyWalkingSpeedzKey ~ TagHeavyWalkingSpeedzValue }
-TagHeavyWalkingSpeedzKey = _{ "heavy_walking_speedz" }
-TagHeavyWalkingSpeedzValue = { Float }
+TagHeavyWalkingSpeedZ = { TagHeavyWalkingSpeedZKey ~ TagHeavyWalkingSpeedZValue }
+TagHeavyWalkingSpeedZKey = _{ "heavy_walking_speedz" }
+TagHeavyWalkingSpeedZValue = { Float }
 
 TagHitA = { TagHitAKey ~ TagHitAValue }
 TagHitAKey = _{ "hit_a:" }
@@ -360,9 +359,9 @@ TagJumpDistance = { TagJumpDistanceKey ~ TagJumpDistanceValue }
 TagJumpDistanceKey = _{ "jump_distance" }
 TagJumpDistanceValue = { Float }
 
-TagJumpDistancez = { TagJumpDistancezKey ~ TagJumpDistancezValue }
-TagJumpDistancezKey = _{ "jump_distancez" }
-TagJumpDistancezValue = { Float }
+TagJumpDistanceZ = { TagJumpDistanceZKey ~ TagJumpDistanceZValue }
+TagJumpDistanceZKey = _{ "jump_distancez" }
+TagJumpDistanceZValue = { Float }
 
 TagJumpHeight = { TagJumpHeightKey ~ TagJumpHeightValue }
 TagJumpHeightKey = _{ "jump_height" }
@@ -412,9 +411,9 @@ TagRunningSpeed = { TagRunningSpeedKey ~ TagRunningSpeedValue }
 TagRunningSpeedKey = _{ "running_speed" }
 TagRunningSpeedValue = { Float }
 
-TagRunningSpeedz = { TagRunningSpeedzKey ~ TagRunningSpeedzValue }
-TagRunningSpeedzKey = _{ "running_speedz" }
-TagRunningSpeedzValue = { Float }
+TagRunningSpeedZ = { TagRunningSpeedZKey ~ TagRunningSpeedZValue }
+TagRunningSpeedZKey = _{ "running_speedz" }
+TagRunningSpeedZValue = { Float }
 
 TagSmall = { TagSmallKey ~ TagSmallValue }
 TagSmallKey = _{ "small:" }
@@ -472,9 +471,9 @@ TagWalkingSpeed = { TagWalkingSpeedKey ~ TagWalkingSpeedValue }
 TagWalkingSpeedKey = _{ "walking_speed" }
 TagWalkingSpeedValue = { Float }
 
-TagWalkingSpeedz = { TagWalkingSpeedzKey ~ TagWalkingSpeedzValue }
-TagWalkingSpeedzKey = _{ "walking_speedz" }
-TagWalkingSpeedzValue = { Float }
+TagWalkingSpeedZ = { TagWalkingSpeedZKey ~ TagWalkingSpeedZValue }
+TagWalkingSpeedZKey = _{ "walking_speedz" }
+TagWalkingSpeedZValue = { Float }
 
 TagWeaponAct = { TagWeaponActKey ~ TagWeaponActValue }
 TagWeaponActKey = _{ "weaponact:" }
