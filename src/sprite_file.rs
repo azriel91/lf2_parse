@@ -23,7 +23,7 @@ impl SpriteFile {
         ObjectDataParser::parse_as_type(
             builder,
             path_pair,
-            Rule::HeaderFieldFilePathValue,
+            Rule::TagFileValue,
             &[|mut builder, value_pair| {
                 let path = value_pair.as_str().parse().map_err(|_| Error::ParsePath {
                     field: stringify!(path),
@@ -42,7 +42,7 @@ impl SpriteFile {
         ObjectDataParser::parse_as_type(
             builder,
             w_pair,
-            Rule::HeaderFieldFileW,
+            Rule::TagW,
             &[|mut builder, value_pair| {
                 let w = value_pair
                     .as_str()
@@ -65,7 +65,7 @@ impl SpriteFile {
         ObjectDataParser::parse_as_type(
             builder,
             h_pair,
-            Rule::HeaderFieldFileH,
+            Rule::TagH,
             &[|mut builder, value_pair| {
                 let h = value_pair
                     .as_str()
@@ -88,7 +88,7 @@ impl SpriteFile {
         ObjectDataParser::parse_as_type(
             builder,
             row_pair,
-            Rule::HeaderFieldFileRow,
+            Rule::TagRow,
             &[|mut builder, value_pair| {
                 let row = value_pair
                     .as_str()
@@ -111,7 +111,7 @@ impl SpriteFile {
         ObjectDataParser::parse_as_type(
             builder,
             col_pair,
-            Rule::HeaderFieldFileCol,
+            Rule::TagCol,
             &[|mut builder, value_pair| {
                 let col = value_pair
                     .as_str()
@@ -135,7 +135,7 @@ impl<'i> TryFrom<Pair<'i, Rule>> for SpriteFile {
         ObjectDataParser::parse_as_type::<'i, '_, _>(
             SpriteFileBuilder::default(),
             pair,
-            Rule::HeaderFieldFile,
+            Rule::SpriteFile,
             &[
                 Self::parse_path,
                 Self::parse_w,
