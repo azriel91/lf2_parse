@@ -10,8 +10,9 @@ use crate::FrameNumber;
 
 /// Represents the next frame number to go to.
 ///
-/// This uses an `isize` as a negative number indicates the object's facing direction should be flipped.
-#[derive(Clone, Copy, Debug, Default)]
+/// This uses an `isize` as a negative number indicates the object's facing
+/// direction should be flipped.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct FrameNumberNext(pub isize);
 
 impl FrameNumberNext {

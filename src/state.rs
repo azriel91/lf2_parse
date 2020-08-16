@@ -2,7 +2,7 @@
 ///
 /// Descriptions are adapted from:
 /// https://lf-empire.de/lf2-empire/data-changing/reference-pages/182-states?showall=1
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum State {
     /// Character standing.
     ///

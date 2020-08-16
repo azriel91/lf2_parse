@@ -8,8 +8,9 @@ use std::{
 
 /// Represents the sprite number to use.
 ///
-/// This uses an `isize` as a negative number indicates the sprite should be flipped.
-#[derive(Clone, Copy, Debug, Default)]
+/// This uses an `isize` as a negative number indicates the sprite should be
+/// flipped.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Pic(pub isize);
 
 impl Pic {

@@ -9,7 +9,7 @@ use std::{
 pub const WAIT_DEFAULT: Wait = Wait(unsafe { NonZeroU32::new_unchecked(1) });
 
 /// Represents the frame number.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Wait(pub NonZeroU32);
 
 impl Default for Wait {
