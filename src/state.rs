@@ -1,8 +1,15 @@
+use std::str::FromStr;
+
+pub use self::state_parse_error::StateParseError;
+
+mod state_parse_error;
+
 /// States
 ///
 /// Descriptions are adapted from:
 /// https://lf-empire.de/lf2-empire/data-changing/reference-pages/182-states?showall=1
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(u32)]
 pub enum State {
     /// Character standing.
     ///
@@ -465,7 +472,7 @@ pub enum State {
     /// z-axis.
     ///
     /// Used for Deep's strafe.
-    ZMovement = 301,
+    AttackingZMovement = 301,
     /// Moves this object 120 pixels behind the closest enemy character.
     ///
     /// Has no effect if there are no enemy characters.
@@ -1082,4 +1089,163 @@ pub enum State {
     /// This state is used in `broken_weapon.dat`, but it functions the same as
     /// `state: 15` ([`State::Other`]).
     BrokenWeapon = 9999,
+}
+
+impl FromStr for State {
+    type Err = StateParseError;
+
+    fn from_str(s: &str) -> Result<State, StateParseError> {
+        s.parse::<u32>()
+            .map_err(StateParseError::ParseIntError)
+            .and_then(|value| match value {
+                0 => Ok(State::Standing),
+                1 => Ok(State::Walking),
+                2 => Ok(State::Running),
+                3 => Ok(State::Attacking),
+                4 => Ok(State::Jumping),
+                5 => Ok(State::Dashing),
+                6 => Ok(State::Rowing),
+                7 => Ok(State::Defend),
+                8 => Ok(State::BrokenDefence),
+                9 => Ok(State::Catching),
+                10 => Ok(State::Caught),
+                11 => Ok(State::Injured),
+                12 => Ok(State::Falling),
+                13 => Ok(State::Ice),
+                14 => Ok(State::Lying),
+                15 => Ok(State::Other),
+                16 => Ok(State::Stunned),
+                17 => Ok(State::Drinking),
+                18 => Ok(State::Burning),
+                19 => Ok(State::FireRun),
+                100 => Ok(State::HitGround),
+                301 => Ok(State::AttackingZMovement),
+                400 => Ok(State::TeleportNearestEnemy),
+                401 => Ok(State::TeleportFurthestAlly),
+                500 => Ok(State::TransformCheck),
+                501 => Ok(State::Transform),
+                1700 => Ok(State::Heal),
+                1000 => Ok(State::LightWeaponInSky),
+                1001 => Ok(State::LightWeaponInHand),
+                1002 => Ok(State::LightWeaponBeingThrown),
+                1003 => Ok(State::LightWeaponJustOnGround),
+                1004 => Ok(State::LightWeaponOnGround),
+                2000 => Ok(State::HeavyWeaponInSky),
+                2001 => Ok(State::HeavyWeaponInHand),
+                2004 => Ok(State::HeavyWeaponOnGround),
+                3000 => Ok(State::BallFlying),
+                3001 => Ok(State::BallFlyingHitting),
+                3002 => Ok(State::BallFlyingHit),
+                3003 => Ok(State::BallFlyingRebound),
+                3004 => Ok(State::BallFlyingDisappear),
+                3005 => Ok(State::BallFlyingNoShadow),
+                3006 => Ok(State::BallFlyingPiercing),
+                8000 => Ok(State::Transform00),
+                8001 => Ok(State::Transform01),
+                8002 => Ok(State::Transform02),
+                8003 => Ok(State::Transform03),
+                8004 => Ok(State::Transform04),
+                8005 => Ok(State::Transform05),
+                8006 => Ok(State::Transform06),
+                8007 => Ok(State::Transform07),
+                8008 => Ok(State::Transform08),
+                8009 => Ok(State::Transform09),
+                8010 => Ok(State::Transform10),
+                8011 => Ok(State::Transform11),
+                8012 => Ok(State::Transform12),
+                8013 => Ok(State::Transform13),
+                8014 => Ok(State::Transform14),
+                8015 => Ok(State::Transform15),
+                8016 => Ok(State::Transform16),
+                8017 => Ok(State::Transform17),
+                8018 => Ok(State::Transform18),
+                8019 => Ok(State::Transform19),
+                8020 => Ok(State::Transform20),
+                8021 => Ok(State::Transform21),
+                8022 => Ok(State::Transform22),
+                8023 => Ok(State::Transform23),
+                8024 => Ok(State::Transform24),
+                8025 => Ok(State::Transform25),
+                8026 => Ok(State::Transform26),
+                8027 => Ok(State::Transform27),
+                8028 => Ok(State::Transform28),
+                8029 => Ok(State::Transform29),
+                8030 => Ok(State::Transform30),
+                8031 => Ok(State::Transform31),
+                8032 => Ok(State::Transform32),
+                8033 => Ok(State::Transform33),
+                8034 => Ok(State::Transform34),
+                8035 => Ok(State::Transform35),
+                8036 => Ok(State::Transform36),
+                8037 => Ok(State::Transform37),
+                8038 => Ok(State::Transform38),
+                8039 => Ok(State::Transform39),
+                8040 => Ok(State::Transform40),
+                8041 => Ok(State::Transform41),
+                8042 => Ok(State::Transform42),
+                8043 => Ok(State::Transform43),
+                8044 => Ok(State::Transform44),
+                8045 => Ok(State::Transform45),
+                8046 => Ok(State::Transform46),
+                8047 => Ok(State::Transform47),
+                8048 => Ok(State::Transform48),
+                8049 => Ok(State::Transform49),
+                8050 => Ok(State::Transform50),
+                8051 => Ok(State::Transform51),
+                8052 => Ok(State::Transform52),
+                8053 => Ok(State::Transform53),
+                8054 => Ok(State::Transform54),
+                8055 => Ok(State::Transform55),
+                8056 => Ok(State::Transform56),
+                8057 => Ok(State::Transform57),
+                8058 => Ok(State::Transform58),
+                8059 => Ok(State::Transform59),
+                8060 => Ok(State::Transform60),
+                8061 => Ok(State::Transform61),
+                8062 => Ok(State::Transform62),
+                8063 => Ok(State::Transform63),
+                8064 => Ok(State::Transform64),
+                8065 => Ok(State::Transform65),
+                8066 => Ok(State::Transform66),
+                8067 => Ok(State::Transform67),
+                8068 => Ok(State::Transform68),
+                8069 => Ok(State::Transform69),
+                8070 => Ok(State::Transform70),
+                8071 => Ok(State::Transform71),
+                8072 => Ok(State::Transform72),
+                8073 => Ok(State::Transform73),
+                8074 => Ok(State::Transform74),
+                8075 => Ok(State::Transform75),
+                8076 => Ok(State::Transform76),
+                8077 => Ok(State::Transform77),
+                8078 => Ok(State::Transform78),
+                8079 => Ok(State::Transform79),
+                8080 => Ok(State::Transform80),
+                8081 => Ok(State::Transform81),
+                8082 => Ok(State::Transform82),
+                8083 => Ok(State::Transform83),
+                8084 => Ok(State::Transform84),
+                8085 => Ok(State::Transform85),
+                8086 => Ok(State::Transform86),
+                8087 => Ok(State::Transform87),
+                8088 => Ok(State::Transform88),
+                8089 => Ok(State::Transform89),
+                8090 => Ok(State::Transform90),
+                8091 => Ok(State::Transform91),
+                8092 => Ok(State::Transform92),
+                8093 => Ok(State::Transform93),
+                8094 => Ok(State::Transform94),
+                8095 => Ok(State::Transform95),
+                8096 => Ok(State::Transform96),
+                8097 => Ok(State::Transform97),
+                8098 => Ok(State::Transform98),
+                8099 => Ok(State::Transform99),
+                9995 => Ok(State::LouisTransform),
+                9996 => Ok(State::LouisTransformSpawnArmour),
+                9997 => Ok(State::Message),
+                9998 => Ok(State::DeleteObject),
+                9999 => Ok(State::BrokenWeapon),
+                value => Err(StateParseError::InvalidValue(value)),
+            })
+    }
 }

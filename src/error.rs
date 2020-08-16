@@ -8,7 +8,7 @@ use std::{
 
 use pest::iterators::Pair;
 
-use crate::Rule;
+use crate::{Rule, StateParseError};
 
 #[derive(Debug)]
 pub enum Error<'i> {
@@ -46,7 +46,7 @@ pub enum Error<'i> {
         /// The `ParseIntError` from the parse attempt,
         error: ParseIntError,
     },
-    /// A pair failed to parse as an integer.
+    /// A pair failed to parse as a `Path`.
     ParsePath {
         /// Human readable name of the field.
         field: &'static str,
@@ -68,6 +68,15 @@ pub enum Error<'i> {
         /// The actual data rule.
         pair_found: Option<Pair<'i, Rule>>,
     },
+    /// Errors when parsing a string as a `State`.
+    StateParse {
+        /// The string that failed to be parsed into the `State`.
+        value_pair: Pair<'i, Rule>,
+        /// The underlying error.
+        error: StateParseError,
+    },
+    /// Variant that should not be reachable, such as through an `Infallible`
+    /// error type..
     Unreachable {
         /// This should really be unreachable, e.g. the `Error` type is
         /// `Infallible` during parsing.
@@ -163,6 +172,15 @@ impl<'i> Display for Error<'i> {
                 }
 
                 write!(f, "This is an error in the `lf2_object.pest` grammar.")
+            }
+            Self::StateParse { value_pair, error } => {
+                let state_str = value_pair.as_str();
+                let (line, col) = value_pair.as_span().start_pos().line_col();
+                write!(
+                    f,
+                    "Failed to parse state `{}` at position: `{}:{}`. Error: `{}`.",
+                    state_str, line, col, error
+                )
             }
             Self::Unreachable { error } => write!(f, "Something is really wrong. Error: {}", error),
         }

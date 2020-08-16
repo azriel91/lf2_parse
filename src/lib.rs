@@ -2,6 +2,7 @@
 
 pub use crate::{
     error::Error,
+    frame::Frame,
     frame_number::FrameNumber,
     frame_number_next::FrameNumberNext,
     header::Header,
@@ -9,11 +10,12 @@ pub use crate::{
     object_data_parser::{ObjectDataParser, Rule},
     pic::Pic,
     sprite_file::SpriteFile,
-    state::State,
+    state::{State, StateParseError},
     wait::Wait,
 };
 
 mod error;
+mod frame;
 mod frame_number;
 mod frame_number_next;
 mod header;
