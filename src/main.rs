@@ -1,41 +1,19 @@
-use std::convert::TryFrom;
+use std::{
+    convert::TryFrom,
+    env,
+    fs::File,
+    io::{BufReader, Read},
+    path::Path,
+};
 
 use pest::Parser;
 
 use lf2_parse::{Error, ObjectData, ObjectDataParser, Rule};
 
-fn run() -> Result<(), Error<'static>> {
-    let mut object_data_pairs = ObjectDataParser::parse(
-        Rule::Object,
-        r#"<bmp_begin>
-name: Frozen
-head: frozen\frozen_f.bmp
-small: frozen\frozen_s.bmp
-file(0-69): frozen\frozen_0.bmp  w: 79  h: 79  row: 10  col: 7
-file(70-139): frozen\frozen_1.bmp  w: 79  h: 79  row: 10  col: 7
-file(140-209): frozen\frozen_2.bmp  w: 79  h: 79  row: 10  col: 7
-walking_frame_rate 3
-walking_speed 5.000000
-walking_speedz 2.570000
-running_frame_rate 3
-running_speed 11.000000
-running_speedz 1.670000
-heavy_walking_speed 3.700000
-heavy_walking_speedz 1.900000
-heavy_running_speed 7.000000
-heavy_running_speedz 1.200000
-jump_height -16.000000
-jump_distance 10.000000
-jump_distancez 3.750000
-dash_height -11.500000
-dash_distance 19.000000
-dash_distancez 5.000000
-rowing_height -2.000000
-rowing_distance 6.000000
-<bmp_end>"#,
-    )?;
+fn parse_object_data<'file>(object_data_str: &'file str) -> Result<(), Error<'file>> {
+    let mut object_data_pairs = ObjectDataParser::parse(Rule::Object, object_data_str)?;
 
-    object_data_pairs.try_for_each(|pair| {
+    object_data_pairs.try_for_each::<_, Result<(), Error<'file>>>(|pair| {
         println!("{:?}", pair.as_rule());
 
         match pair.as_rule() {
@@ -47,7 +25,44 @@ rowing_distance 6.000000
             }
             _ => Ok(()),
         }
-    })
+    })?;
+
+    Result::<(), Error>::Ok(())
+}
+
+fn run() -> Result<(), Error<'static>> {
+    let mut args_os = env::args_os();
+
+    // TODO: First argument may be application name, or not.
+    args_os.next();
+
+    args_os.try_for_each(|arg_os| {
+        // Open the file.
+        let path = AsRef::<Path>::as_ref(&arg_os);
+        let file = File::open(path).map_err(|io_error| Error::FileOpenError {
+            path: path.to_owned(),
+            io_error,
+        })?;
+
+        // Read the file.
+        let mut buf_reader = BufReader::new(file);
+        let mut object_data_str = String::new();
+        buf_reader
+            .read_to_string(&mut object_data_str)
+            .map_err(|io_error| Error::FileOpenError {
+                path: path.to_owned(),
+                io_error,
+            })?;
+
+        // Parse the data.
+        if let Err(e) = parse_object_data(&object_data_str) {
+            eprintln!("{}", e);
+        }
+
+        Result::<(), Error>::Ok(())
+    })?;
+
+    Ok(())
 }
 
 fn main() -> Result<(), Error<'static>> {

@@ -1,7 +1,9 @@
 use std::{
     fmt,
     fmt::Display,
+    io,
     num::{ParseFloatError, ParseIntError},
+    path::PathBuf,
 };
 
 use pest::iterators::Pair;
@@ -10,6 +12,20 @@ use crate::Rule;
 
 #[derive(Debug)]
 pub enum Error<'i> {
+    /// Failed to open data file from the file system.
+    FileOpenError {
+        /// Path that was attempted to be opened as a file.
+        path: PathBuf,
+        /// The `io::Error` returned by the OS.
+        io_error: io::Error,
+    },
+    /// Failed to read data from a data file.
+    FileReadError {
+        /// Path to the file that was attempted to be read.
+        path: PathBuf,
+        /// The `io::Error` returned by the OS.
+        io_error: io::Error,
+    },
     /// Pest could not parse the input with the object grammar.
     PestError(pest::error::Error<Rule>),
     /// A pair failed to parse as a float.
@@ -39,11 +55,13 @@ pub enum Error<'i> {
     },
     /// Unused?
     ObjectDataExpected(Pair<'i, Rule>),
-    /// The `derive_builder::Builder::build()` method failed with the given message.
+    /// The `derive_builder::Builder::build()` method failed with the given
+    /// message.
     DataBuildFailed(String),
     /// Error should be unreachable based on the `lf2_object.pest` grammar.
     ///
-    /// If this variant is hit, then there is a bug in either the grammar, or pest.
+    /// If this variant is hit, then there is a bug in either the grammar, or
+    /// pest.
     Grammar {
         /// The expected data rule.
         rule_expected: Rule,
@@ -51,7 +69,8 @@ pub enum Error<'i> {
         pair_found: Option<Pair<'i, Rule>>,
     },
     Unreachable {
-        /// This should really be unreachable, e.g. the `Error` type is `Infallible` during parsing.
+        /// This should really be unreachable, e.g. the `Error` type is
+        /// `Infallible` during parsing.
         error: Box<dyn std::error::Error>,
     },
 }
@@ -67,6 +86,18 @@ impl<'i> std::error::Error for Error<'i> {}
 impl<'i> Display for Error<'i> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            Self::FileOpenError { path, io_error } => write!(
+                f,
+                "Failed to open file: `{}`. Error: {}",
+                path.display(),
+                io_error
+            ),
+            Self::FileReadError { path, io_error } => write!(
+                f,
+                "Failed to read file: `{}`. Error: {}",
+                path.display(),
+                io_error
+            ),
             Self::PestError(pest_error) => write!(f, "{}", pest_error),
             Self::ParseFloat {
                 field,
