@@ -154,7 +154,7 @@ Frame = { FrameBegin ~ FrameNumber ~ FrameName ~ FrameData ~ FrameEnd }
 FrameBegin = _{ "<frame>" }
 FrameNumber = { Uint }
 FrameName = { PathSegment }
-FrameData = { FrameTag* }
+FrameData = { (FrameTag | Element)* }
 FrameEnd = _{ "<frame_end>" }
 FrameTag = {
     TagCenterX
