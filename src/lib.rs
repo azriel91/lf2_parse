@@ -9,6 +9,7 @@ pub use crate::{
     object_data_parser::{ObjectDataParser, Rule},
     pic::Pic,
     sprite_file::SpriteFile,
+    state::State,
     wait::Wait,
 };
 
@@ -20,4 +21,5 @@ mod object_data;
 mod object_data_parser;
 mod pic;
 mod sprite_file;
+mod state;
 mod wait;
