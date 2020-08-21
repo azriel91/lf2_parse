@@ -157,21 +157,29 @@ impl<'i> Display for Error<'i> {
                 rule_expected,
                 pair_found,
             } => {
-                write!(f, "Expected `{:?}` as the next data element", rule_expected)?;
+                write!(
+                    f,
+                    "Subrule function expected `{:?}` as the next data element",
+                    rule_expected
+                )?;
 
                 if let Some(pair_found) = pair_found {
                     let rule = pair_found.as_rule();
                     let (line, col) = pair_found.as_span().start_pos().line_col();
                     write!(
                         f,
-                        " at position: `{}:{}`, but found a `{:?}`. ",
+                        " at position: `{}:{}`, but grammar parsed a `{:?}`.\n",
                         line, col, rule,
                     )?;
                 } else {
-                    write!(f, ", but nothing is found. ")?;
+                    write!(f, ", but nothing is found.\n")?;
                 }
 
-                write!(f, "This is an error in the `lf2_object.pest` grammar.")
+                write!(
+                    f,
+                    "This means there is a bug where the subrule functions do not match the \
+                    `lf2_object.pest` grammar."
+                )
             }
             Self::StateParse { value_pair, error } => {
                 let state_str = value_pair.as_str();
