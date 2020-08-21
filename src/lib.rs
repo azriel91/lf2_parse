@@ -5,6 +5,7 @@ pub use crate::{
     frame::Frame,
     frame_number::FrameNumber,
     frame_number_next::FrameNumberNext,
+    frames::Frames,
     header::Header,
     object_data::ObjectData,
     object_data_parser::{ObjectDataParser, Rule},
@@ -18,6 +19,7 @@ mod error;
 mod frame;
 mod frame_number;
 mod frame_number_next;
+mod frames;
 mod header;
 mod object_data;
 mod object_data_parser;
