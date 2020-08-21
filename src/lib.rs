@@ -8,7 +8,7 @@ pub use crate::{
     frames::Frames,
     header::Header,
     object_data::ObjectData,
-    object_data_parser::{ObjectDataParser, Rule},
+    object_data_parser::{ObjectDataParser, Rule, SubRuleFn},
     pic::Pic,
     sprite_file::SpriteFile,
     state::{State, StateParseError},

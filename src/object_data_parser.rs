@@ -7,27 +7,32 @@ use crate::Error;
 #[grammar = "lf2_object.pest"]
 pub struct ObjectDataParser;
 
+/// Function that processes a sub grammar rule.
+pub type SubRuleFn<TBuilder> = for<'i> fn(TBuilder, Pair<'i, Rule>) -> Result<TBuilder, Error<'i>>;
+
 impl ObjectDataParser {
     pub fn parse_as_type<'f, 'i: 'f, TBuilder>(
         builder: TBuilder,
         pair: Pair<'i, Rule>,
         rule_expected: Rule,
-        subrule_fns: &'f [for<'sub_fn> fn(
-            TBuilder,
-            Pair<'sub_fn, Rule>,
-        ) -> Result<TBuilder, Error<'sub_fn>>],
-    ) -> Result<TBuilder, Error<'i>> {
+        subrule_fns: impl IntoIterator<Item = &'f SubRuleFn<TBuilder>>,
+    ) -> Result<TBuilder, Error<'i>>
+    where
+        TBuilder: 'static,
+    {
         if pair.as_rule() == rule_expected {
             let mut pairs = pair.into_inner();
-            subrule_fns.iter().try_fold(builder, |builder, subrule_fn| {
-                pairs
-                    .next()
-                    .ok_or(Error::Grammar {
-                        rule_expected: Rule::Header,
-                        pair_found: None,
-                    })
-                    .and_then(|pair| subrule_fn(builder, pair))
-            })
+            subrule_fns
+                .into_iter()
+                .try_fold(builder, |builder, subrule_fn| {
+                    pairs
+                        .next()
+                        .ok_or(Error::Grammar {
+                            rule_expected: Rule::Header,
+                            pair_found: None,
+                        })
+                        .and_then(|pair| subrule_fn(builder, pair))
+                })
         } else {
             Err(Error::Grammar {
                 rule_expected,

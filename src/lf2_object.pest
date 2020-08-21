@@ -12,6 +12,7 @@ ObjectName = ${ (ASCII_ALPHA | ObjectNameSymChars) ~ (ASCII_ALPHANUMERIC | Objec
 Object = {
     SOI
     ~ Header
+    ~ Frames
     ~ ANY*
     ~ EOI
 }
@@ -150,6 +151,7 @@ WPointTag = {
 }
 WPointEnd = _{ "wpoint_end:" }
 
+Frames = { Frame* }
 Frame = { FrameBegin ~ FrameNumber ~ FrameName ~ FrameData ~ FrameEnd }
 FrameBegin = _{ "<frame>" }
 FrameNumber = { Uint }
