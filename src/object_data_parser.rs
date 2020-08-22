@@ -21,17 +21,11 @@ impl ObjectDataParser {
         TBuilder: 'static,
     {
         if pair.as_rule() == rule_expected {
-            let mut pairs = pair.into_inner();
-            subrule_fns
-                .into_iter()
-                .try_fold(builder, |builder, subrule_fn| {
-                    pairs
-                        .next()
-                        .ok_or(Error::Grammar {
-                            rule_expected: Rule::Header,
-                            pair_found: None,
-                        })
-                        .and_then(|pair| subrule_fn(builder, pair))
+            let pairs = pair.into_inner();
+            pairs
+                .zip(subrule_fns.into_iter())
+                .try_fold(builder, |builder, (pair, subrule_fn)| {
+                    subrule_fn(builder, pair)
                 })
         } else {
             Err(Error::Grammar {

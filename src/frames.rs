@@ -45,7 +45,7 @@ impl<'i> TryFrom<Pair<'i, Rule>> for Frames {
             Frames::default(),
             pair,
             Rule::Frames,
-            &[Self::parse_frame as SubRuleFn<_>],
+            Iterator::cycle([Self::parse_frame as SubRuleFn<_>].iter()),
         )
     }
 }
