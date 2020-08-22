@@ -38,7 +38,7 @@ pub struct Frame {
     hit_uj: FrameNumberNext,
     #[builder(default)]
     mp: i64,
-    next_frame: FrameNumber,
+    next_frame: FrameNumberNext,
     pic: Pic,
     #[builder(default)]
     sound: Option<PathBuf>,
