@@ -8,8 +8,8 @@ use crate::{Error, Frames, Header, ObjectDataParser, Rule, SubRuleFn};
 #[derive(Builder, Debug, PartialEq)]
 #[builder(pattern = "owned")]
 pub struct ObjectData {
-    header: Header,
-    frames: Frames,
+    pub header: Header,
+    pub frames: Frames,
 }
 
 impl<'i> TryFrom<Pair<'i, Rule>> for ObjectData {

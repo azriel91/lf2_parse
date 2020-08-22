@@ -19,7 +19,11 @@ fn parse_object_data<'file>(object_data_str: &'file str) -> Result<(), Error<'fi
         match pair.as_rule() {
             Rule::Object => {
                 let object_data = ObjectData::try_from(pair)?;
-                println!("{:?}", object_data);
+                println!(
+                    "Name: {}\nFrames: {}",
+                    object_data.header.name,
+                    object_data.frames.len()
+                );
 
                 Ok(())
             }
