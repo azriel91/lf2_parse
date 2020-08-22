@@ -84,8 +84,11 @@ CPointTag = {
     TagKind
     | TagX
     | TagY
+    | TagCover
     | TagDecrease
+    | TagDirControl
     | TagHurtable
+    | TagInjury
     | TagAAction
     | TagVAction
     | TagTAction
@@ -93,6 +96,8 @@ CPointTag = {
     | TagThrowVx
     | TagThrowVy
     | TagThrowVz
+    | TagFrontHurtAct
+    | TagBackHurtAct
 }
 CPointEnd = _{ "cpoint_end:" }
 
@@ -438,7 +443,7 @@ TagThrowInjuryKey = _{ "throwinjury:" }
 TagThrowInjuryValue = { Int }
 
 TagThrowVx = { TagThrowVxKey ~ TagThrowVxValue }
-TagThrowVxKey = _{ "throwVx:" }
+TagThrowVxKey = _{ "throwvx:" }
 TagThrowVxValue = { Int }
 
 TagThrowVy = { TagThrowVyKey ~ TagThrowVyValue }
