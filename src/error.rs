@@ -58,6 +58,11 @@ pub enum Error<'i> {
     /// The `derive_builder::Builder::build()` method failed with the given
     /// message.
     DataBuildFailed(String),
+    /// Frame element was built but returned with `None`.
+    ///
+    /// If this is reached, there is a bug in the `Element` object data parsing
+    /// code.
+    ElementBuildNone(Pair<'i, Rule>),
     /// Error should be unreachable based on the `lf2_object.pest` grammar.
     ///
     /// If this variant is hit, then there is a bug in either the grammar, or
@@ -153,6 +158,22 @@ impl<'i> Display for Error<'i> {
                 )
             }
             Self::DataBuildFailed(message) => write!(f, "{}", message),
+            Self::ElementBuildNone(element_pair) => {
+                let element_str = element_pair.as_str();
+                let (line, col) = element_pair.as_span().start_pos().line_col();
+                write!(
+                    f,
+                    "A frame element was built, but returned as `None`.\n\
+                    File position: `{}:{}`\n\
+                    \n\
+                    ```\n\
+                    {}\n\
+                    ```\n\
+                    \n\
+                    This is likely a bug in `element.rs`.",
+                    line, col, element_str,
+                )
+            }
             Self::Grammar {
                 rule_expected,
                 pair_found,

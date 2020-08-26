@@ -1,6 +1,7 @@
 //! Parses Little Fighter 2 (LF2) data files into an in-memory model.
 
 pub use crate::{
+    element::Element,
     error::Error,
     frame::Frame,
     frame_number::FrameNumber,
@@ -15,6 +16,7 @@ pub use crate::{
     wait::Wait,
 };
 
+mod element;
 mod error;
 mod frame;
 mod frame_number;

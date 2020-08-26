@@ -20,9 +20,8 @@ fn parse_object_data<'file>(object_data_str: &'file str) -> Result<(), Error<'fi
             Rule::Object => {
                 let object_data = ObjectData::try_from(pair)?;
                 println!(
-                    "Name: {}\nFrames: {}",
-                    object_data.header.name,
-                    object_data.frames.len()
+                    "Name: {}\nFrames:\n{:#?}",
+                    object_data.header.name, object_data.frames
                 );
 
                 Ok(())

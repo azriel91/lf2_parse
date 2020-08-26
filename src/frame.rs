@@ -4,7 +4,9 @@ use std::{convert::TryFrom, path::PathBuf};
 use derive_builder::Builder;
 use pest::iterators::Pair;
 
-use crate::{Error, FrameNumber, FrameNumberNext, ObjectDataParser, Pic, Rule, State, Wait};
+use crate::{
+    Element, Error, FrameNumber, FrameNumberNext, ObjectDataParser, Pic, Rule, State, Wait,
+};
 
 #[derive(Builder, Clone, Debug, PartialEq)]
 #[builder(pattern = "owned")]
@@ -16,6 +18,8 @@ pub struct Frame {
     d_vx: i64,
     d_vy: i64,
     d_vz: i64,
+    #[builder(default)]
+    elements: Vec<Element>,
     #[builder(default)]
     hit_a: FrameNumberNext,
     #[builder(default)]
@@ -103,20 +107,24 @@ impl Frame {
     ) -> Result<FrameBuilder, Error<'i>> {
         frame_data_pair
             .into_inner()
-            .try_fold(
-                builder,
-                |builder, frame_tag_or_element_pair| match frame_tag_or_element_pair.as_rule() {
+            .try_fold(builder, |mut builder, frame_tag_or_element_pair| {
+                match frame_tag_or_element_pair.as_rule() {
                     Rule::FrameTag => Frame::parse_tag(builder, frame_tag_or_element_pair),
                     Rule::Element => {
-                        // TODO: implement
+                        let element = Element::try_from(frame_tag_or_element_pair)?;
+                        if let Some(elements) = builder.elements.as_mut() {
+                            elements.push(element);
+                        } else {
+                            builder = builder.elements(vec![element]);
+                        }
                         Ok(builder)
                     }
                     _ => Err(Error::Grammar {
                         rule_expected: Rule::FrameTag, // TODO: Take in multiple expected rules.
                         pair_found: Some(frame_tag_or_element_pair),
                     }),
-                },
-            )
+                }
+            })
     }
 
     fn parse_tag<'i>(
