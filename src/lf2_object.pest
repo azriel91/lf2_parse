@@ -90,6 +90,7 @@ CPointTag = {
     | TagHurtable
     | TagInjury
     | TagAAction
+    | TagJAction
     | TagVAction
     | TagTAction
     | TagThrowInjury
@@ -361,6 +362,10 @@ TagHurtableValue = { Int }
 TagInjury = { TagInjuryKey ~ TagInjuryValue }
 TagInjuryKey = _{ "injury:" }
 TagInjuryValue = { Int }
+
+TagJAction = { TagJActionKey ~ TagJActionValue }
+TagJActionKey = _{ "jaction:" }
+TagJActionValue = { Int }
 
 TagJumpDistance = { TagJumpDistanceKey ~ TagJumpDistanceValue }
 TagJumpDistanceKey = _{ "jump_distance" }
