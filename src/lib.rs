@@ -1,7 +1,10 @@
 //! Parses Little Fighter 2 (LF2) data files into an in-memory model.
 
 pub use crate::{
-    element::Element,
+    element::{
+        BPoint, Bdy, CPoint, CPointKind, Effect, EffectParseError, Element, Itr, ItrKind, OPoint,
+        OPointFacing, OPointFacingDir, OPointKind, WPoint,
+    },
     error::Error,
     frame::Frame,
     frame_number::FrameNumber,
@@ -10,6 +13,7 @@ pub use crate::{
     header::Header,
     object_data::ObjectData,
     object_data_parser::{ObjectDataParser, Rule, SubRuleFn},
+    object_id::ObjectId,
     pic::Pic,
     sprite_file::SpriteFile,
     state::{State, StateParseError},
@@ -25,6 +29,7 @@ mod frames;
 mod header;
 mod object_data;
 mod object_data_parser;
+mod object_id;
 mod pic;
 mod sprite_file;
 mod state;

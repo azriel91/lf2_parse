@@ -5,14 +5,31 @@ use pest::iterators::Pair;
 use crate::{Error, ObjectDataParser, Rule, SubRuleFn};
 
 pub use self::{
-    b_point::BPoint, bdy::Bdy, c_point::CPoint, itr::Itr, o_point::OPoint, w_point::WPoint,
+    b_point::BPoint,
+    bdy::Bdy,
+    c_point::CPoint,
+    c_point_kind::CPointKind,
+    effect::{Effect, EffectParseError},
+    itr::Itr,
+    itr_kind::ItrKind,
+    o_point::OPoint,
+    o_point_facing::OPointFacing,
+    o_point_facing_dir::OPointFacingDir,
+    o_point_kind::OPointKind,
 };
+// w_point::WPoint,
 
 mod b_point;
 mod bdy;
 mod c_point;
+mod c_point_kind;
+mod effect;
 mod itr;
+mod itr_kind;
 mod o_point;
+mod o_point_facing;
+mod o_point_facing_dir;
+mod o_point_kind;
 mod w_point;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -60,9 +77,9 @@ impl<'i> TryFrom<Pair<'i, Rule>> for Element {
     type Error = Error<'i>;
 
     fn try_from(pair: Pair<'i, Rule>) -> Result<Self, Self::Error> {
-        let sub_rule_fns: &[SubRuleFn<ElementBuilder>] = &[Self::parse_element];
+        let sub_rule_fns: &[SubRuleFn<Option<Self>>] = &[Self::parse_element];
 
         ObjectDataParser::parse_as_type(None, pair, Rule::Element, sub_rule_fns)
-            .and_then(|element| element.ok_or_else(|| Error::DataBuildFailed(pair)))
+            .and_then(|element| element.ok_or_else(|| Error::ElementBuildNone(pair)))
     }
 }
