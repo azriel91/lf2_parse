@@ -1,4 +1,8 @@
-use crate::{CPointKind, FrameNumber, FrameNumberNext};
+use crate::{FrameNumber, FrameNumberNext};
+
+pub use self::c_point_kind::CPointKind;
+
+mod c_point_kind;
 
 /// Aligns the character that is holding and the one that is held.
 ///

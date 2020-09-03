@@ -1,4 +1,10 @@
-use crate::{Effect, ItrKind};
+pub use self::{
+    effect::{Effect, EffectParseError},
+    itr_kind::ItrKind,
+};
+
+mod effect;
+mod itr_kind;
 
 /// Area that hits other objects.
 ///

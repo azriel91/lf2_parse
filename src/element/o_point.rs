@@ -1,4 +1,12 @@
-use crate::{FrameNumberNext, OPointFacing, OPointKind, ObjectId};
+use crate::{FrameNumberNext, ObjectId};
+
+pub use self::{
+    o_point_facing::OPointFacing, o_point_facing_dir::OPointFacingDir, o_point_kind::OPointKind,
+};
+
+mod o_point_facing;
+mod o_point_facing_dir;
+mod o_point_kind;
 
 /// Spawns an object during a game.
 ///

@@ -3,10 +3,21 @@ use std::{convert::TryFrom, path::PathBuf};
 use derive_builder::Builder;
 use pest::iterators::Pair;
 
-use crate::{
-    Element, Error, FrameNumber, FrameNumberNext, ObjectDataParser, Pic, Rule, State, SubRuleFn,
-    Wait,
+use crate::{Element, Error, ObjectDataParser, Rule, SubRuleFn};
+
+pub use self::{
+    frame_number::FrameNumber,
+    frame_number_next::FrameNumberNext,
+    pic::Pic,
+    state::{State, StateParseError},
+    wait::Wait,
 };
+
+mod frame_number;
+mod frame_number_next;
+mod pic;
+mod state;
+mod wait;
 
 #[derive(Builder, Clone, Debug, PartialEq)]
 #[builder(pattern = "owned")]
