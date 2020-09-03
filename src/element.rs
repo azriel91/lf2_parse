@@ -16,8 +16,8 @@ pub use self::{
     o_point_facing::OPointFacing,
     o_point_facing_dir::OPointFacingDir,
     o_point_kind::OPointKind,
+    w_point::{WPoint, WPointKind, WPointKindParseError},
 };
-// w_point::WPoint,
 
 mod b_point;
 mod bdy;

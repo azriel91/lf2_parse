@@ -18,6 +18,8 @@ pub use crate::{
     sprite_file::SpriteFile,
     state::{State, StateParseError},
     wait::Wait,
+    weapon_strength::WeaponStrength,
+    weapon_strength_index::WeaponStrengthIndex,
 };
 
 mod element;
@@ -34,3 +36,5 @@ mod pic;
 mod sprite_file;
 mod state;
 mod wait;
+mod weapon_strength;
+mod weapon_strength_index;

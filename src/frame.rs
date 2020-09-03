@@ -1,11 +1,11 @@
-use crate::SubRuleFn;
 use std::{convert::TryFrom, path::PathBuf};
 
 use derive_builder::Builder;
 use pest::iterators::Pair;
 
 use crate::{
-    Element, Error, FrameNumber, FrameNumberNext, ObjectDataParser, Pic, Rule, State, Wait,
+    Element, Error, FrameNumber, FrameNumberNext, ObjectDataParser, Pic, Rule, State, SubRuleFn,
+    Wait,
 };
 
 #[derive(Builder, Clone, Debug, PartialEq)]
