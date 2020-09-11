@@ -73,6 +73,16 @@ pub enum Error<'i> {
         /// The actual data rule.
         pair_found: Option<Pair<'i, Rule>>,
     },
+    /// Expected a tag value, but got nothing.
+    ///
+    /// Error should be unreachable based on the `lf2_object.pest` grammar.
+    ///
+    /// If this variant is hit, then there is a bug in either the grammar, or
+    /// pest.
+    ValueExpected {
+        /// Pair of the preceeding rule.
+        tag_pair: Pair<'i, Rule>,
+    },
     /// Errors when parsing a string as a `State`.
     StateParse {
         /// The string that failed to be parsed into the `State`.
@@ -195,6 +205,21 @@ impl<'i> Display for Error<'i> {
                 } else {
                     write!(f, ", but nothing is found.\n")?;
                 }
+
+                write!(
+                    f,
+                    "This means there is a bug where the subrule functions do not match the \
+                    `lf2_object.pest` grammar."
+                )
+            }
+            Self::ValueExpected { tag_pair } => {
+                let rule = tag_pair.as_rule();
+                let (line, col) = tag_pair.as_span().start_pos().line_col();
+                write!(
+                    f,
+                    "Expected value for the `{:?}` tag at position: `{}:{}`, but nothing is found.\n",
+                    rule, line, col
+                )?;
 
                 write!(
                     f,

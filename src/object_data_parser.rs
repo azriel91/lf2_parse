@@ -34,4 +34,19 @@ impl ObjectDataParser {
             })
         }
     }
+
+    pub fn parse_value<'i, TBuilder>(
+        builder: TBuilder,
+        tag_pair: Pair<'i, Rule>,
+        subrule_fn: SubRuleFn<TBuilder>,
+    ) -> Result<TBuilder, Error<'i>>
+    where
+        TBuilder: 'static,
+    {
+        if let Some(value_pair) = tag_pair.into_inner().next() {
+            subrule_fn(builder, value_pair)
+        } else {
+            Err(Error::ValueExpected { tag_pair })
+        }
+    }
 }
