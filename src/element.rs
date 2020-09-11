@@ -6,7 +6,7 @@ use crate::{Error, ObjectDataParser, Rule, SubRuleFn};
 
 pub use self::{
     b_point::BPoint,
-    bdy::Bdy,
+    bdy::{Bdy, BdyKind, BdyKindParseError},
     c_point::{CPoint, CPointKind},
     itr::{Effect, EffectParseError, Itr, ItrKind},
     o_point::{OPoint, OPointFacing, OPointFacingDir, OPointKind},
@@ -41,23 +41,20 @@ impl Element {
         element: Option<Element>,
         element_pair: Pair<'i, Rule>,
     ) -> Result<Option<Element>, Error<'i>> {
-        element_pair
-            .into_inner()
-            .try_fold(element, |element, element_inner_pair| {
-                let element_parsed = match element_inner_pair.as_rule() {
-                    Rule::Bdy => Bdy::try_from(element_inner_pair).map(Self::Bdy),
-                    Rule::BPoint => BPoint::try_from(element_inner_pair).map(Self::BPoint),
-                    Rule::CPoint => CPoint::try_from(element_inner_pair).map(Self::CPoint),
-                    Rule::Itr => Itr::try_from(element_inner_pair).map(Self::Itr),
-                    Rule::OPoint => OPoint::try_from(element_inner_pair).map(Self::OPoint),
-                    Rule::WPoint => WPoint::try_from(element_inner_pair).map(Self::WPoint),
-                    _ => Err(Error::Grammar {
-                        rule_expected: Rule::Bdy, // TODO: Take in multiple expected rules.
-                        pair_found: Some(element_inner_pair),
-                    }),
-                }?;
-                Ok(element.or(element_parsed))
-            })
+        let element_parsed = match element_pair.as_rule() {
+            Rule::Bdy => Bdy::try_from(element_pair).map(Self::Bdy),
+            Rule::BPoint => BPoint::try_from(element_pair).map(Self::BPoint),
+            // Rule::CPoint => CPoint::try_from(element_pair).map(Self::CPoint),
+            // Rule::Itr => Itr::try_from(element_pair).map(Self::Itr),
+            // Rule::OPoint => OPoint::try_from(element_pair).map(Self::OPoint),
+            // Rule::WPoint => WPoint::try_from(element_pair).map(Self::WPoint),
+            Rule::CPoint | Rule::Itr | Rule::OPoint | Rule::WPoint => return Ok(element),
+            _ => Err(Error::Grammar {
+                rule_expected: Rule::Bdy, // TODO: Take in multiple expected rules.
+                pair_found: Some(element_pair),
+            }),
+        }?;
+        Ok(element.or(Some(element_parsed)))
     }
 }
 
@@ -67,7 +64,7 @@ impl<'i> TryFrom<Pair<'i, Rule>> for Element {
     fn try_from(pair: Pair<'i, Rule>) -> Result<Self, Self::Error> {
         let sub_rule_fns: &[SubRuleFn<Option<Self>>] = &[Self::parse_element];
 
-        ObjectDataParser::parse_as_type(None, pair, Rule::Element, sub_rule_fns)
+        ObjectDataParser::parse_as_type(None, pair.clone(), Rule::Element, sub_rule_fns)
             .and_then(|element| element.ok_or_else(|| Error::ElementBuildNone(pair)))
     }
 }

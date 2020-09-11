@@ -2,8 +2,9 @@
 
 pub use crate::{
     element::{
-        BPoint, Bdy, CPoint, CPointKind, Effect, EffectParseError, Element, Itr, ItrKind, OPoint,
-        OPointFacing, OPointFacingDir, OPointKind, WPoint, WPointKind, WPointKindParseError,
+        BPoint, Bdy, BdyKind, BdyKindParseError, CPoint, CPointKind, Effect, EffectParseError,
+        Element, Itr, ItrKind, OPoint, OPointFacing, OPointFacingDir, OPointKind, WPoint,
+        WPointKind, WPointKindParseError,
     },
     error::Error,
     frame::{Frame, FrameNumber, FrameNumberNext, Pic, State, StateParseError, Wait},

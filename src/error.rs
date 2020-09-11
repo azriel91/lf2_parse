@@ -8,7 +8,7 @@ use std::{
 
 use pest::iterators::Pair;
 
-use crate::{Rule, StateParseError};
+use crate::{BdyKindParseError, Rule, StateParseError};
 
 #[derive(Debug)]
 pub enum Error<'i> {
@@ -28,6 +28,13 @@ pub enum Error<'i> {
     },
     /// Pest could not parse the input with the object grammar.
     PestError(pest::error::Error<Rule>),
+    /// A pair failed to parse as a `BdyKind`.
+    ParseBdyKind {
+        /// The value that failed to be parsed.
+        value_pair: Pair<'i, Rule>,
+        /// The `BdyKindParseError` from the parse attempt,
+        error: BdyKindParseError,
+    },
     /// A pair failed to parse as a float.
     ParseFloat {
         /// Human readable name of the field.
@@ -123,6 +130,15 @@ impl<'i> Display for Error<'i> {
                 io_error
             ),
             Self::PestError(pest_error) => write!(f, "{}", pest_error),
+            Self::ParseBdyKind { value_pair, error } => {
+                let value_string = value_pair.as_str();
+                let (line, col) = value_pair.as_span().start_pos().line_col();
+                write!(
+                    f,
+                    "Failed to parse `bdy: kind:` value `{}` at position: `{}:{}`. Error: `{}`.",
+                    value_string, line, col, error
+                )
+            }
             Self::ParseFloat {
                 field,
                 value_pair,

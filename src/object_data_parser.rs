@@ -43,7 +43,7 @@ impl ObjectDataParser {
     where
         TBuilder: 'static,
     {
-        if let Some(value_pair) = tag_pair.into_inner().next() {
+        if let Some(value_pair) = tag_pair.clone().into_inner().next() {
             subrule_fn(builder, value_pair)
         } else {
             Err(Error::ValueExpected { tag_pair })
