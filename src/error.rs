@@ -74,9 +74,19 @@ pub enum Error<'i> {
     ///
     /// If this variant is hit, then there is a bug in either the grammar, or
     /// pest.
-    Grammar {
-        /// The expected data rule.
+    GrammarSingle {
+        /// The data rule that is valid in this position.
         rule_expected: Rule,
+        /// The actual data rule.
+        pair_found: Option<Pair<'i, Rule>>,
+    },
+    /// Error should be unreachable based on the `lf2_object.pest` grammar.
+    ///
+    /// If this variant is hit, then there is a bug in either the grammar, or
+    /// pest.
+    Grammar {
+        /// The data rules that are valid in this position.
+        rules_expected: &'static [Rule],
         /// The actual data rule.
         pair_found: Option<Pair<'i, Rule>>,
     },
@@ -200,15 +210,35 @@ impl<'i> Display for Error<'i> {
                     line, col, element_str,
                 )
             }
-            Self::Grammar {
+            Self::GrammarSingle {
                 rule_expected,
                 pair_found,
             } => {
+                write!(f, "Expected `{:?}`", rule_expected)?;
+
+                if let Some(pair_found) = pair_found {
+                    let rule = pair_found.as_rule();
+                    let (line, col) = pair_found.as_span().start_pos().line_col();
+                    write!(
+                        f,
+                        " at position: `{}:{}`, but grammar parsed a `{:?}`.\n",
+                        line, col, rule,
+                    )?;
+                } else {
+                    write!(f, ", but nothing is found.\n")?;
+                }
+
                 write!(
                     f,
-                    "Subrule function expected `{:?}` as the next data element",
-                    rule_expected
-                )?;
+                    "This means there is a bug where the subrule functions do not match the \
+                    `lf2_object.pest` grammar."
+                )
+            }
+            Self::Grammar {
+                rules_expected,
+                pair_found,
+            } => {
+                write!(f, "Expected one of `{:?}`", rules_expected)?;
 
                 if let Some(pair_found) = pair_found {
                     let rule = pair_found.as_rule();

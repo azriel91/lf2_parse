@@ -50,7 +50,14 @@ impl Element {
             // Rule::WPoint => WPoint::try_from(element_pair).map(Self::WPoint),
             Rule::CPoint | Rule::Itr | Rule::OPoint | Rule::WPoint => return Ok(element),
             _ => Err(Error::Grammar {
-                rule_expected: Rule::Bdy, // TODO: Take in multiple expected rules.
+                rules_expected: &[
+                    Rule::Bdy,
+                    Rule::BPoint,
+                    Rule::CPoint,
+                    Rule::Itr,
+                    Rule::OPoint,
+                    Rule::WPoint,
+                ],
                 pair_found: Some(element_pair),
             }),
         }?;

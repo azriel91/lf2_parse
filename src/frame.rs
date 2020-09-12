@@ -122,16 +122,17 @@ impl Frame {
                 match frame_tag_or_element_pair.as_rule() {
                     Rule::FrameTag => Frame::parse_tag(builder, frame_tag_or_element_pair),
                     Rule::Element => {
-                        let element = Element::try_from(frame_tag_or_element_pair)?;
-                        if let Some(elements) = builder.elements.as_mut() {
-                            elements.push(element);
-                        } else {
-                            builder = builder.elements(vec![element]);
+                        if let Ok(element) = Element::try_from(frame_tag_or_element_pair) {
+                            if let Some(elements) = builder.elements.as_mut() {
+                                elements.push(element);
+                            } else {
+                                builder = builder.elements(vec![element]);
+                            }
                         }
                         Ok(builder)
                     }
                     _ => Err(Error::Grammar {
-                        rule_expected: Rule::FrameTag, // TODO: Take in multiple expected rules.
+                        rules_expected: &[Rule::Element, Rule::FrameTag],
                         pair_found: Some(frame_tag_or_element_pair),
                     }),
                 }

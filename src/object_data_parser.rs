@@ -28,7 +28,7 @@ impl ObjectDataParser {
                     subrule_fn(builder, pair)
                 })
         } else {
-            Err(Error::Grammar {
+            Err(Error::GrammarSingle {
                 rule_expected,
                 pair_found: Some(pair),
             })
