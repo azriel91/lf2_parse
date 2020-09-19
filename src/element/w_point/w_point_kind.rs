@@ -13,6 +13,12 @@ pub enum WPointKind {
     Dropping = 3,
 }
 
+impl Default for WPointKind {
+    fn default() -> Self {
+        Self::Holding
+    }
+}
+
 impl FromStr for WPointKind {
     type Err = WPointKindParseError;
 

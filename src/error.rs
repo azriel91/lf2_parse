@@ -8,7 +8,7 @@ use std::{
 
 use pest::iterators::Pair;
 
-use crate::{BdyKindParseError, Rule, StateParseError};
+use crate::{BdyKindParseError, Rule, StateParseError, WPointKindParseError};
 
 #[derive(Debug)]
 pub enum Error<'i> {
@@ -34,6 +34,27 @@ pub enum Error<'i> {
         value_pair: Pair<'i, Rule>,
         /// The `BdyKindParseError` from the parse attempt,
         error: BdyKindParseError,
+    },
+    /// A pair failed to parse as a `WPointKind`.
+    ParseWPointKind {
+        /// The value that failed to be parsed.
+        value_pair: Pair<'i, Rule>,
+        /// The `WPointKindParseError` from the parse attempt,
+        error: WPointKindParseError,
+    },
+    /// Failed to parse `weaponact:` value as `FrameNumberNext`.
+    ParseWeaponAct {
+        /// The value that failed to be parsed.
+        value_pair: Pair<'i, Rule>,
+        /// The `ParseIntError` from the parse attempt,
+        error: ParseIntError,
+    },
+    /// Failed to parse `attacking:` value as `WeaponStrengthIndex`.
+    ParseWeaponStrengthIndex {
+        /// The value that failed to be parsed.
+        value_pair: Pair<'i, Rule>,
+        /// The `ParseIntError` from the parse attempt,
+        error: ParseIntError,
     },
     /// A pair failed to parse as a float.
     ParseFloat {
@@ -149,6 +170,33 @@ impl<'i> Display for Error<'i> {
                     value_string, line, col, error
                 )
             }
+            Self::ParseWPointKind { value_pair, error } => {
+                let value_string = value_pair.as_str();
+                let (line, col) = value_pair.as_span().start_pos().line_col();
+                write!(
+                    f,
+                    "Failed to parse `wpoint: kind:` value `{}` at position: `{}:{}`. Error: `{}`.",
+                    value_string, line, col, error
+                )
+            }
+            Self::ParseWeaponAct { value_pair, error } => {
+                let value_string = value_pair.as_str();
+                let (line, col) = value_pair.as_span().start_pos().line_col();
+                write!(
+                    f,
+                    "Failed to parse `weaponact:` value `{}` at position: `{}:{}`. Error: `{}`.",
+                    value_string, line, col, error
+                )
+            }
+            Self::ParseWeaponStrengthIndex { value_pair, error } => {
+                let value_string = value_pair.as_str();
+                let (line, col) = value_pair.as_span().start_pos().line_col();
+                write!(
+                    f,
+                    "Failed to parse `wpoint: attacking:` value `{}` at position: `{}:{}`. Error: `{}`.",
+                    value_string, line, col, error
+                )
+            }
             Self::ParseFloat {
                 field,
                 value_pair,
@@ -158,7 +206,7 @@ impl<'i> Display for Error<'i> {
                 let (line, col) = value_pair.as_span().start_pos().line_col();
                 write!(
                     f,
-                    "Failed to parse {} value `{}` at position: `{}:{}`. Error: `{}`.",
+                    "Failed to parse `{}` value `{}` at position: `{}:{}`. Error: `{}`.",
                     field, value_string, line, col, error
                 )
             }
@@ -171,7 +219,7 @@ impl<'i> Display for Error<'i> {
                 let (line, col) = value_pair.as_span().start_pos().line_col();
                 write!(
                     f,
-                    "Failed to parse {} value `{}` at position: `{}:{}`. Error: `{}`.",
+                    "Failed to parse `{}` value `{}` at position: `{}:{}`. Error: `{}`.",
                     field, value_string, line, col, error
                 )
             }
