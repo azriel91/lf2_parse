@@ -8,7 +8,7 @@ use std::{
 
 use pest::iterators::Pair;
 
-use crate::{BdyKindParseError, Rule, StateParseError, WPointKindParseError};
+use crate::{BdyKindParseError, OPointKindParseError, Rule, StateParseError, WPointKindParseError};
 
 #[derive(Debug)]
 pub enum Error<'i> {
@@ -34,6 +34,20 @@ pub enum Error<'i> {
         value_pair: Pair<'i, Rule>,
         /// The `BdyKindParseError` from the parse attempt,
         error: BdyKindParseError,
+    },
+    /// A pair failed to parse as an `OPointKind`.
+    ParseOPointKind {
+        /// The value that failed to be parsed.
+        value_pair: Pair<'i, Rule>,
+        /// The `OPointKindParseError` from the parse attempt,
+        error: OPointKindParseError,
+    },
+    /// Failed to parse `opoint: action:` value as `FrameNumberNext`.
+    ParseOPointAction {
+        /// The value that failed to be parsed.
+        value_pair: Pair<'i, Rule>,
+        /// The `OPointKindParseError` from the parse attempt,
+        error: ParseIntError,
     },
     /// A pair failed to parse as a `WPointKind`.
     ParseWPointKind {
@@ -167,6 +181,24 @@ impl<'i> Display for Error<'i> {
                 write!(
                     f,
                     "Failed to parse `bdy: kind:` value `{}` at position: `{}:{}`. Error: `{}`.",
+                    value_string, line, col, error
+                )
+            }
+            Self::ParseOPointKind { value_pair, error } => {
+                let value_string = value_pair.as_str();
+                let (line, col) = value_pair.as_span().start_pos().line_col();
+                write!(
+                    f,
+                    "Failed to parse `opoint: kind:` value `{}` at position: `{}:{}`. Error: `{}`.",
+                    value_string, line, col, error
+                )
+            }
+            Self::ParseOPointAction { value_pair, error } => {
+                let value_string = value_pair.as_str();
+                let (line, col) = value_pair.as_span().start_pos().line_col();
+                write!(
+                    f,
+                    "Failed to parse `opoint: action:` value `{}` at position: `{}:{}`. Error: `{}`.",
                     value_string, line, col, error
                 )
             }

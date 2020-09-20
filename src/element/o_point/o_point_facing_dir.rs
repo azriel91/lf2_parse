@@ -8,3 +8,9 @@ pub enum OPointFacingDir {
     /// Always face to the right.
     Right,
 }
+
+impl Default for OPointFacingDir {
+    fn default() -> Self {
+        Self::ParentSame
+    }
+}
