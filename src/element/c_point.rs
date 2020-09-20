@@ -1,13 +1,18 @@
-use crate::{FrameNumber, FrameNumberNext};
+use std::convert::TryFrom;
 
-pub use self::c_point_kind::CPointKind;
+use pest::iterators::Pair;
+
+use crate::{Error, FrameNumber, FrameNumberNext, ObjectDataParser, Rule, SubRuleFn};
+
+pub use self::{c_point_kind::CPointKind, c_point_kind_parse_error::CPointKindParseError};
 
 mod c_point_kind;
+mod c_point_kind_parse_error;
 
 /// Aligns the character that is holding and the one that is held.
 ///
 /// See https://lf-empire.de/lf2-empire/data-changing/frame-elements/177-cpoint-catch-point?showall=1
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct CPoint {
     /// Catching object or caught character.
     pub kind: CPointKind,
@@ -138,4 +143,416 @@ pub struct CPoint {
     pub front_hurt_act: FrameNumberNext,
     /// Frame to switch to when caught character is hit from the back.
     pub back_hurt_act: FrameNumberNext,
+}
+
+impl CPoint {
+    fn parse_tags<'i>(
+        c_point: CPoint,
+        c_point_data_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        c_point_data_pair
+            .into_inner()
+            .try_fold(c_point, CPoint::parse_tag)
+    }
+
+    fn parse_tag<'i>(
+        c_point: CPoint,
+        c_point_tag_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        ObjectDataParser::parse_as_type(
+            c_point,
+            c_point_tag_pair,
+            Rule::CPointTag,
+            &[Self::parse_tag_value as SubRuleFn<_>],
+        )
+    }
+
+    fn parse_tag_value<'i>(
+        mut c_point: CPoint,
+        c_point_tag_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        c_point = match c_point_tag_pair.as_rule() {
+            Rule::TagKind => {
+                ObjectDataParser::parse_value(c_point, c_point_tag_pair, Self::parse_kind_value)?
+            }
+            Rule::TagX => {
+                ObjectDataParser::parse_value(c_point, c_point_tag_pair, Self::parse_x_value)?
+            }
+            Rule::TagY => {
+                ObjectDataParser::parse_value(c_point, c_point_tag_pair, Self::parse_y_value)?
+            }
+            Rule::TagCover => {
+                ObjectDataParser::parse_value(c_point, c_point_tag_pair, Self::parse_cover_value)?
+            }
+            Rule::TagDecrease => ObjectDataParser::parse_value(
+                c_point,
+                c_point_tag_pair,
+                Self::parse_decrease_value,
+            )?,
+            Rule::TagDirControl => ObjectDataParser::parse_value(
+                c_point,
+                c_point_tag_pair,
+                Self::parse_dir_control_value,
+            )?,
+            Rule::TagHurtable => ObjectDataParser::parse_value(
+                c_point,
+                c_point_tag_pair,
+                Self::parse_hurtable_value,
+            )?,
+            Rule::TagInjury => {
+                ObjectDataParser::parse_value(c_point, c_point_tag_pair, Self::parse_injury_value)?
+            }
+            Rule::TagAAction => ObjectDataParser::parse_value(
+                c_point,
+                c_point_tag_pair,
+                Self::parse_a_action_value,
+            )?,
+            Rule::TagJAction => ObjectDataParser::parse_value(
+                c_point,
+                c_point_tag_pair,
+                Self::parse_j_action_value,
+            )?,
+            Rule::TagVAction => ObjectDataParser::parse_value(
+                c_point,
+                c_point_tag_pair,
+                Self::parse_v_action_value,
+            )?,
+            Rule::TagTAction => ObjectDataParser::parse_value(
+                c_point,
+                c_point_tag_pair,
+                Self::parse_t_action_value,
+            )?,
+            Rule::TagThrowInjury => ObjectDataParser::parse_value(
+                c_point,
+                c_point_tag_pair,
+                Self::parse_throw_injury_value,
+            )?,
+            Rule::TagThrowVx => ObjectDataParser::parse_value(
+                c_point,
+                c_point_tag_pair,
+                Self::parse_throw_vx_value,
+            )?,
+            Rule::TagThrowVy => ObjectDataParser::parse_value(
+                c_point,
+                c_point_tag_pair,
+                Self::parse_throw_vy_value,
+            )?,
+            Rule::TagThrowVz => ObjectDataParser::parse_value(
+                c_point,
+                c_point_tag_pair,
+                Self::parse_throw_vz_value,
+            )?,
+            Rule::TagFrontHurtAct => ObjectDataParser::parse_value(
+                c_point,
+                c_point_tag_pair,
+                Self::parse_front_hurt_act_value,
+            )?,
+            Rule::TagBackHurtAct => ObjectDataParser::parse_value(
+                c_point,
+                c_point_tag_pair,
+                Self::parse_back_hurt_act_value,
+            )?,
+            _ => c_point,
+        };
+        Ok(c_point)
+    }
+
+    fn parse_kind_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let kind = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseCPointKind { value_pair, error })?;
+        c_point.kind = kind;
+        Ok(c_point)
+    }
+
+    fn parse_x_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let x = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(x),
+                value_pair,
+                error,
+            })?;
+        c_point.x = x;
+        Ok(c_point)
+    }
+
+    fn parse_y_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let y = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(y),
+                value_pair,
+                error,
+            })?;
+        c_point.y = y;
+        Ok(c_point)
+    }
+
+    fn parse_cover_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let cover = value_pair
+            .as_str()
+            .parse::<u32>()
+            // Cover held character if value is non-zero
+            .map(|value| value != 0)
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(cover),
+                value_pair,
+                error,
+            })?;
+        c_point.cover = cover;
+        Ok(c_point)
+    }
+
+    fn parse_decrease_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let decrease = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(decrease),
+                value_pair,
+                error,
+            })?;
+        c_point.decrease = decrease;
+        Ok(c_point)
+    }
+
+    fn parse_dir_control_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let dir_control = value_pair
+            .as_str()
+            .parse::<u32>()
+            // Allow direction control if value is non-zero
+            .map(|value| value != 0)
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(dir_control),
+                value_pair,
+                error,
+            })?;
+        c_point.dir_control = dir_control;
+        Ok(c_point)
+    }
+
+    fn parse_hurtable_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let hurtable = value_pair
+            .as_str()
+            .parse::<u32>()
+            // Allow held object to be hit if value is non-zero
+            .map(|value| value != 0)
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(hurtable),
+                value_pair,
+                error,
+            })?;
+        c_point.hurtable = hurtable;
+        Ok(c_point)
+    }
+
+    fn parse_injury_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let injury = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(injury),
+                value_pair,
+                error,
+            })?;
+        c_point.injury = injury;
+        Ok(c_point)
+    }
+
+    fn parse_a_action_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let a_action = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(a_action),
+                value_pair,
+                error,
+            })?;
+        c_point.a_action = a_action;
+        Ok(c_point)
+    }
+
+    fn parse_j_action_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let j_action = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(j_action),
+                value_pair,
+                error,
+            })?;
+        c_point.j_action = j_action;
+        Ok(c_point)
+    }
+
+    fn parse_v_action_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let v_action = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(v_action),
+                value_pair,
+                error,
+            })?;
+        c_point.v_action = v_action;
+        Ok(c_point)
+    }
+
+    fn parse_t_action_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let t_action = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(t_action),
+                value_pair,
+                error,
+            })?;
+        c_point.t_action = t_action;
+        Ok(c_point)
+    }
+
+    fn parse_throw_injury_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let throw_injury = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(throw_injury),
+                value_pair,
+                error,
+            })?;
+        c_point.throw_injury = throw_injury;
+        Ok(c_point)
+    }
+
+    fn parse_throw_vx_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let throw_vx = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(throw_vx),
+                value_pair,
+                error,
+            })?;
+        c_point.throw_vx = throw_vx;
+        Ok(c_point)
+    }
+
+    fn parse_throw_vy_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let throw_vy = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(throw_vy),
+                value_pair,
+                error,
+            })?;
+        c_point.throw_vy = throw_vy;
+        Ok(c_point)
+    }
+
+    fn parse_throw_vz_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let throw_vz = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(throw_vz),
+                value_pair,
+                error,
+            })?;
+        c_point.throw_vz = throw_vz;
+        Ok(c_point)
+    }
+
+    fn parse_front_hurt_act_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let front_hurt_act = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(front_hurt_act),
+                value_pair,
+                error,
+            })?;
+        c_point.front_hurt_act = front_hurt_act;
+        Ok(c_point)
+    }
+
+    fn parse_back_hurt_act_value<'i>(
+        mut c_point: CPoint,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<CPoint, Error<'i>> {
+        let back_hurt_act = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(back_hurt_act),
+                value_pair,
+                error,
+            })?;
+        c_point.back_hurt_act = back_hurt_act;
+        Ok(c_point)
+    }
+}
+
+impl<'i> TryFrom<Pair<'i, Rule>> for CPoint {
+    type Error = Error<'i>;
+
+    fn try_from(pair: Pair<'i, Rule>) -> Result<Self, Self::Error> {
+        let sub_rule_fns: &[SubRuleFn<_>] = &[CPoint::parse_tags];
+        ObjectDataParser::parse_as_type(CPoint::default(), pair, Rule::CPoint, sub_rule_fns)
+    }
 }

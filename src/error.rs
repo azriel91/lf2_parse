@@ -8,7 +8,10 @@ use std::{
 
 use pest::iterators::Pair;
 
-use crate::{BdyKindParseError, OPointKindParseError, Rule, StateParseError, WPointKindParseError};
+use crate::{
+    BdyKindParseError, CPointKindParseError, OPointKindParseError, Rule, StateParseError,
+    WPointKindParseError,
+};
 
 #[derive(Debug)]
 pub enum Error<'i> {
@@ -34,6 +37,13 @@ pub enum Error<'i> {
         value_pair: Pair<'i, Rule>,
         /// The `BdyKindParseError` from the parse attempt,
         error: BdyKindParseError,
+    },
+    /// A pair failed to parse as an `CPointKind`.
+    ParseCPointKind {
+        /// The value that failed to be parsed.
+        value_pair: Pair<'i, Rule>,
+        /// The `CPointKindParseError` from the parse attempt,
+        error: CPointKindParseError,
     },
     /// A pair failed to parse as an `OPointKind`.
     ParseOPointKind {
@@ -181,6 +191,15 @@ impl<'i> Display for Error<'i> {
                 write!(
                     f,
                     "Failed to parse `bdy: kind:` value `{}` at position: `{}:{}`. Error: `{}`.",
+                    value_string, line, col, error
+                )
+            }
+            Self::ParseCPointKind { value_pair, error } => {
+                let value_string = value_pair.as_str();
+                let (line, col) = value_pair.as_span().start_pos().line_col();
+                write!(
+                    f,
+                    "Failed to parse `cpoint: kind:` value `{}` at position: `{}:{}`. Error: `{}`.",
                     value_string, line, col, error
                 )
             }
