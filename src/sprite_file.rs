@@ -3,7 +3,7 @@ use std::{convert::TryFrom, path::PathBuf};
 use derive_builder::Builder;
 use pest::iterators::Pair;
 
-use crate::{Error, ObjectDataParser, Rule};
+use crate::{Error, ObjectDataParser, Rule, SubRuleFn};
 
 #[derive(Builder, Debug, PartialEq)]
 #[builder(pattern = "owned")]
@@ -23,16 +23,21 @@ impl SpriteFile {
         ObjectDataParser::parse_as_type(
             builder,
             path_pair,
-            Rule::HeaderFieldFilePathValue,
-            &[|mut builder, value_pair| {
-                let path = value_pair.as_str().parse().map_err(|_| Error::ParsePath {
-                    field: stringify!(path),
-                    value_pair,
-                })?;
-                builder = builder.path(path);
-                Ok(builder)
-            }],
+            Rule::TagFileValue,
+            &[Self::parse_path_value as SubRuleFn<_>],
         )
+    }
+
+    fn parse_path_value<'i>(
+        mut builder: SpriteFileBuilder,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<SpriteFileBuilder, Error<'i>> {
+        let path = value_pair.as_str().parse().map_err(|_| Error::ParsePath {
+            field: stringify!(path),
+            value_pair,
+        })?;
+        builder = builder.path(path);
+        Ok(builder)
     }
 
     fn parse_w<'i>(
@@ -42,20 +47,25 @@ impl SpriteFile {
         ObjectDataParser::parse_as_type(
             builder,
             w_pair,
-            Rule::HeaderFieldFileW,
-            &[|mut builder, value_pair| {
-                let w = value_pair
-                    .as_str()
-                    .parse()
-                    .map_err(|error| Error::ParseInt {
-                        field: stringify!(w),
-                        value_pair,
-                        error,
-                    })?;
-                builder = builder.w(w);
-                Ok(builder)
-            }],
+            Rule::TagW,
+            &[Self::parse_w_value as SubRuleFn<_>],
         )
+    }
+
+    fn parse_w_value<'i>(
+        mut builder: SpriteFileBuilder,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<SpriteFileBuilder, Error<'i>> {
+        let w = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(w),
+                value_pair,
+                error,
+            })?;
+        builder = builder.w(w);
+        Ok(builder)
     }
 
     fn parse_h<'i>(
@@ -65,20 +75,25 @@ impl SpriteFile {
         ObjectDataParser::parse_as_type(
             builder,
             h_pair,
-            Rule::HeaderFieldFileH,
-            &[|mut builder, value_pair| {
-                let h = value_pair
-                    .as_str()
-                    .parse()
-                    .map_err(|error| Error::ParseInt {
-                        field: stringify!(h),
-                        value_pair,
-                        error,
-                    })?;
-                builder = builder.h(h);
-                Ok(builder)
-            }],
+            Rule::TagH,
+            &[Self::parse_h_value as SubRuleFn<_>],
         )
+    }
+
+    fn parse_h_value<'i>(
+        mut builder: SpriteFileBuilder,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<SpriteFileBuilder, Error<'i>> {
+        let h = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(h),
+                value_pair,
+                error,
+            })?;
+        builder = builder.h(h);
+        Ok(builder)
     }
 
     fn parse_row<'i>(
@@ -88,20 +103,25 @@ impl SpriteFile {
         ObjectDataParser::parse_as_type(
             builder,
             row_pair,
-            Rule::HeaderFieldFileRow,
-            &[|mut builder, value_pair| {
-                let row = value_pair
-                    .as_str()
-                    .parse()
-                    .map_err(|error| Error::ParseInt {
-                        field: stringify!(row),
-                        value_pair,
-                        error,
-                    })?;
-                builder = builder.row(row);
-                Ok(builder)
-            }],
+            Rule::TagRow,
+            &[Self::parse_row_value as SubRuleFn<_>],
         )
+    }
+
+    fn parse_row_value<'i>(
+        mut builder: SpriteFileBuilder,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<SpriteFileBuilder, Error<'i>> {
+        let row = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(row),
+                value_pair,
+                error,
+            })?;
+        builder = builder.row(row);
+        Ok(builder)
     }
 
     fn parse_col<'i>(
@@ -111,20 +131,25 @@ impl SpriteFile {
         ObjectDataParser::parse_as_type(
             builder,
             col_pair,
-            Rule::HeaderFieldFileCol,
-            &[|mut builder, value_pair| {
-                let col = value_pair
-                    .as_str()
-                    .parse()
-                    .map_err(|error| Error::ParseInt {
-                        field: stringify!(col),
-                        value_pair,
-                        error,
-                    })?;
-                builder = builder.col(col);
-                Ok(builder)
-            }],
+            Rule::TagCol,
+            &[Self::parse_col_value as SubRuleFn<_>],
         )
+    }
+
+    fn parse_col_value<'i>(
+        mut builder: SpriteFileBuilder,
+        value_pair: Pair<'i, Rule>,
+    ) -> Result<SpriteFileBuilder, Error<'i>> {
+        let col = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(col),
+                value_pair,
+                error,
+            })?;
+        builder = builder.col(col);
+        Ok(builder)
     }
 }
 
@@ -132,10 +157,10 @@ impl<'i> TryFrom<Pair<'i, Rule>> for SpriteFile {
     type Error = Error<'i>;
 
     fn try_from(pair: Pair<'i, Rule>) -> Result<Self, Self::Error> {
-        ObjectDataParser::parse_as_type::<'i, '_, _>(
+        ObjectDataParser::parse_as_type::<'i, '_>(
             SpriteFileBuilder::default(),
             pair,
-            Rule::HeaderFieldFile,
+            Rule::SpriteFile,
             &[
                 Self::parse_path,
                 Self::parse_w,

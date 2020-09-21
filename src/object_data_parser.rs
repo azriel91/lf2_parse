@@ -7,32 +7,46 @@ use crate::Error;
 #[grammar = "lf2_object.pest"]
 pub struct ObjectDataParser;
 
+/// Function that processes a sub grammar rule.
+pub type SubRuleFn<TBuilder> = for<'i> fn(TBuilder, Pair<'i, Rule>) -> Result<TBuilder, Error<'i>>;
+
 impl ObjectDataParser {
     pub fn parse_as_type<'f, 'i: 'f, TBuilder>(
         builder: TBuilder,
         pair: Pair<'i, Rule>,
         rule_expected: Rule,
-        subrule_fns: &'f [for<'sub_fn> fn(
-            TBuilder,
-            Pair<'sub_fn, Rule>,
-        ) -> Result<TBuilder, Error<'sub_fn>>],
-    ) -> Result<TBuilder, Error<'i>> {
+        subrule_fns: impl IntoIterator<Item = &'f SubRuleFn<TBuilder>>,
+    ) -> Result<TBuilder, Error<'i>>
+    where
+        TBuilder: 'static,
+    {
         if pair.as_rule() == rule_expected {
-            let mut pairs = pair.into_inner();
-            subrule_fns.iter().try_fold(builder, |builder, subrule_fn| {
-                pairs
-                    .next()
-                    .ok_or(Error::Grammar {
-                        rule_expected: Rule::Header,
-                        pair_found: None,
-                    })
-                    .and_then(|pair| subrule_fn(builder, pair))
-            })
+            let pairs = pair.into_inner();
+            pairs
+                .zip(subrule_fns.into_iter())
+                .try_fold(builder, |builder, (pair, subrule_fn)| {
+                    subrule_fn(builder, pair)
+                })
         } else {
-            Err(Error::Grammar {
+            Err(Error::GrammarSingle {
                 rule_expected,
                 pair_found: Some(pair),
             })
+        }
+    }
+
+    pub fn parse_value<'i, TBuilder>(
+        builder: TBuilder,
+        tag_pair: Pair<'i, Rule>,
+        subrule_fn: SubRuleFn<TBuilder>,
+    ) -> Result<TBuilder, Error<'i>>
+    where
+        TBuilder: 'static,
+    {
+        if let Some(value_pair) = tag_pair.clone().into_inner().next() {
+            subrule_fn(builder, value_pair)
+        } else {
+            Err(Error::ValueExpected { tag_pair })
         }
     }
 }

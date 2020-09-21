@@ -3,149 +3,502 @@ Float = ${ "-"? ~ ASCII_DIGIT+ ~ "." ~ ASCII_DIGIT* }
 Path = ${ PathSegment ~ (PathSeparator ~ PathSegment )* }
 PathSeparator = { "/" | "\\" }
 PathSymChars = { "_" | "-" | "." }
-PathSegment = ${ (ASCII_ALPHA | PathSymChars) ~ (ASCII_ALPHANUMERIC | PathSymChars)* }
-U32 = ${ ASCII_DIGIT+ }
+PathSegment = ${ (ASCII_ALPHANUMERIC | PathSymChars) ~ (ASCII_ALPHANUMERIC | PathSymChars)* }
+Int = ${ "-"? ~ ASCII_DIGIT+ }
+Uint = ${ ASCII_DIGIT+ }
 ObjectNameSymChars = { "_" | "-" | "." }
 ObjectName = ${ (ASCII_ALPHA | ObjectNameSymChars) ~ (ASCII_ALPHANUMERIC | ObjectNameSymChars)* }
 
 Object = {
     SOI
     ~ Header
+    ~ Frames
     ~ ANY*
     ~ EOI
 }
 
 Header = { HeaderBegin ~ HeaderData ~ HeaderEnd }
 HeaderBegin = _{ "<bmp_begin>" }
-HeaderData = { HeaderField* }
+HeaderData = { HeaderTag* }
 HeaderEnd = _{ "<bmp_end>" }
-HeaderField = {
-    HeaderFieldName
-    | HeaderFieldHead
-    | HeaderFieldSmall
-    | HeaderFieldFile
-    | HeaderFieldWalkingFrameRate
-    | HeaderFieldWalkingSpeed
-    | HeaderFieldWalkingSpeedz
-    | HeaderFieldRunningFrameRate
-    | HeaderFieldRunningSpeed
-    | HeaderFieldRunningSpeedz
-    | HeaderFieldHeavyWalkingSpeed
-    | HeaderFieldHeavyWalkingSpeedz
-    | HeaderFieldHeavyRunningSpeed
-    | HeaderFieldHeavyRunningSpeedz
-    | HeaderFieldJumpHeight
-    | HeaderFieldJumpDistance
-    | HeaderFieldJumpDistancez
-    | HeaderFieldDashHeight
-    | HeaderFieldDashDistance
-    | HeaderFieldDashDistancez
-    | HeaderFieldRowingHeight
-    | HeaderFieldRowingDistance
+HeaderTag = {
+    TagName
+    | TagHead
+    | TagSmall
+    | SpriteFile
+    | TagWalkingFrameRate
+    | TagWalkingSpeed
+    | TagWalkingSpeedZ
+    | TagRunningFrameRate
+    | TagRunningSpeed
+    | TagRunningSpeedZ
+    | TagHeavyWalkingSpeed
+    | TagHeavyWalkingSpeedZ
+    | TagHeavyRunningSpeed
+    | TagHeavyRunningSpeedZ
+    | TagJumpHeight
+    | TagJumpDistance
+    | TagJumpDistanceZ
+    | TagDashHeight
+    | TagDashDistance
+    | TagDashDistanceZ
+    | TagRowingHeight
+    | TagRowingDistance
 }
-HeaderFieldName = { HeaderFieldNameKey ~ HeaderFieldNameValue }
-HeaderFieldNameKey = _{ "name:" }
-HeaderFieldNameValue = { ObjectName }
 
-HeaderFieldHead = { HeaderFieldHeadKey ~ HeaderFieldHeadValue }
-HeaderFieldHeadKey = _{ "head:" }
-HeaderFieldHeadValue = { Path }
+Element = {
+    Bdy
+    | BPoint
+    | CPoint
+    | Itr
+    | OPoint
+    | WPoint
+}
 
-HeaderFieldSmall = { HeaderFieldSmallKey ~ HeaderFieldSmallValue }
-HeaderFieldSmallKey = _{ "small:" }
-HeaderFieldSmallValue = { Path }
+Bdy = { BdyBegin ~ BdyData ~ BdyEnd }
+BdyBegin = _{ "bdy:" }
+BdyData = { BdyTag* }
+BdyTag = {
+    TagKind
+    | TagX
+    | TagY
+    | TagW
+    | TagH
+    | TagZWidth
+}
+BdyEnd = _{ "bdy_end:" }
 
-HeaderFieldFile = { HeaderFieldFilePath ~ HeaderFieldFileW ~ HeaderFieldFileH ~ HeaderFieldFileRow ~ HeaderFieldFileCol }
+BPoint = { BPointBegin ~ BPointData ~ BPointEnd }
+BPointBegin = _{ "bpoint:" }
+BPointData = { BPointTag* }
+BPointTag = {
+    TagX
+    | TagY
+}
+BPointEnd = _{ "bpoint_end:" }
 
-HeaderFieldFilePath = _{ HeaderFieldFilePathKey ~ HeaderFieldFilePathValue }
-HeaderFieldFilePathKey = _{ "file" ~ HeaderFieldFilePathNumber? ~ ":" }
-HeaderFieldFilePathValue = { Path }
-HeaderFieldFilePathNumber = _{ "(" ~ ASCII_DIGIT+ ~ ("-" ~ ASCII_DIGIT+)? ~ ")" }
+CPoint = { CPointBegin ~ CPointData ~ CPointEnd }
+CPointBegin = _{ "cpoint:" }
+CPointData = { CPointTag* }
+CPointTag = {
+    TagKind
+    | TagX
+    | TagY
+    | TagCover
+    | TagDecrease
+    | TagDirControl
+    | TagHurtable
+    | TagInjury
+    | TagAAction
+    | TagJAction
+    | TagVAction
+    | TagTAction
+    | TagThrowInjury
+    | TagThrowVx
+    | TagThrowVy
+    | TagThrowVz
+    | TagFrontHurtAct
+    | TagBackHurtAct
+}
+CPointEnd = _{ "cpoint_end:" }
 
-HeaderFieldFileW = { HeaderFieldFileWKey ~ HeaderFieldFileWValue }
-HeaderFieldFileWKey = _{ "w:" }
-HeaderFieldFileWValue = { U32 }
+Itr = { ItrBegin ~ ItrData ~ ItrEnd }
+ItrBegin = _{ "itr:" }
+ItrData = { ItrTag* }
+ItrTag = {
+    TagKind
+    | TagX
+    | TagY
+    | TagW
+    | TagH
+    | TagZWidth
+    | TagDVx
+    | TagDVy
+    | TagDVz
+    | TagFall
+    | TagBDefend
+    | TagInjury
+    | TagEffect
+    | TagARest
+    | TagVRest
+    | TagCatchingAct
+    | TagCaughtAct
+}
+ItrEnd = _{ "itr_end:" }
 
-HeaderFieldFileH = { HeaderFieldFileHKey ~ HeaderFieldFileHValue }
-HeaderFieldFileHKey = _{ "h:" }
-HeaderFieldFileHValue = { U32 }
+OPoint = { OPointBegin ~ OPointData ~ OPointEnd }
+OPointBegin = _{ "opoint:" }
+OPointData = { OPointTag* }
+OPointTag = {
+    TagKind
+    | TagX
+    | TagY
+    | TagAction
+    | TagDVx
+    | TagDVy
+    | TagOid
+    | TagFacing
+}
+OPointEnd = _{ "opoint_end:" }
 
-HeaderFieldFileRow = { HeaderFieldFileRowKey ~ HeaderFieldFileRowValue }
-HeaderFieldFileRowKey = _{ "row:" }
-HeaderFieldFileRowValue = { U32 }
+WPoint = { WPointBegin ~ WPointData ~ WPointEnd }
+WPointBegin = _{ "wpoint:" }
+WPointData = { WPointTag* }
+WPointTag = {
+    TagKind
+    | TagX
+    | TagY
+    | TagWeaponAct
+    | TagAttacking
+    | TagCover
+    | TagDVx
+    | TagDVy
+    | TagDVz
+}
+WPointEnd = _{ "wpoint_end:" }
 
-HeaderFieldFileCol = { HeaderFieldFileColKey ~ HeaderFieldFileColValue }
-HeaderFieldFileColKey = _{ "col:" }
-HeaderFieldFileColValue = { U32 }
+Frames = { Frame* }
+Frame = { FrameBegin ~ FrameNumber ~ FrameName ~ FrameData ~ FrameEnd }
+FrameBegin = _{ "<frame>" }
+FrameNumber = { Uint }
+FrameName = { PathSegment }
+FrameData = { (FrameTag | Element)* }
+FrameEnd = _{ "<frame_end>" }
+FrameTag = {
+    TagCenterX
+    | TagCenterY
+    | TagDVx
+    | TagDVy
+    | TagDVz
+    | TagHitA
+    | TagHitD
+    | TagHitDa
+    | TagHitDj
+    | TagHitFa
+    | TagHitFj
+    | TagHitJ
+    | TagHitJa
+    | TagHitUa
+    | TagHitUj
+    | TagMp
+    | TagNext
+    | TagPic
+    | TagSound
+    | TagState
+    | TagWait
+}
 
-HeaderFieldWalkingFrameRate = { HeaderFieldWalkingFrameRateKey ~ HeaderFieldWalkingFrameRateValue }
-HeaderFieldWalkingFrameRateKey = _{ "walking_frame_rate" }
-HeaderFieldWalkingFrameRateValue = { U32 }
+SpriteFile = { TagFile ~ TagW ~ TagH ~ TagRow ~ TagCol }
 
-HeaderFieldWalkingSpeed = { HeaderFieldWalkingSpeedKey ~ HeaderFieldWalkingSpeedValue }
-HeaderFieldWalkingSpeedKey = _{ "walking_speed" }
-HeaderFieldWalkingSpeedValue = { Float }
+TagAAction = { TagAActionKey ~ TagAActionValue }
+TagAActionKey = _{ "aaction:" }
+TagAActionValue = { Int }
 
-HeaderFieldWalkingSpeedz = { HeaderFieldWalkingSpeedzKey ~ HeaderFieldWalkingSpeedzValue }
-HeaderFieldWalkingSpeedzKey = _{ "walking_speedz" }
-HeaderFieldWalkingSpeedzValue = { Float }
+TagARest = { TagARestKey ~ TagARestValue }
+TagARestKey = _{ "arest:" }
+TagARestValue = { Int }
 
-HeaderFieldRunningFrameRate = { HeaderFieldRunningFrameRateKey ~ HeaderFieldRunningFrameRateValue }
-HeaderFieldRunningFrameRateKey = _{ "running_frame_rate" }
-HeaderFieldRunningFrameRateValue = { U32 }
+TagAction = { TagActionKey ~ TagActionValue }
+TagActionKey = _{ "action:" }
+TagActionValue = { Int }
 
-HeaderFieldRunningSpeed = { HeaderFieldRunningSpeedKey ~ HeaderFieldRunningSpeedValue }
-HeaderFieldRunningSpeedKey = _{ "running_speed" }
-HeaderFieldRunningSpeedValue = { Float }
+TagAttacking = { TagAttackingKey ~ TagAttackingValue }
+TagAttackingKey = _{ "attacking:" }
+TagAttackingValue = { Int }
 
-HeaderFieldRunningSpeedz = { HeaderFieldRunningSpeedzKey ~ HeaderFieldRunningSpeedzValue }
-HeaderFieldRunningSpeedzKey = _{ "running_speedz" }
-HeaderFieldRunningSpeedzValue = { Float }
+TagBDefend = { TagBDefendKey ~ TagBDefendValue }
+TagBDefendKey = _{ "bdefend:" }
+TagBDefendValue = { Int }
 
-HeaderFieldHeavyWalkingSpeed = { HeaderFieldHeavyWalkingSpeedKey ~ HeaderFieldHeavyWalkingSpeedValue }
-HeaderFieldHeavyWalkingSpeedKey = _{ "heavy_walking_speed" }
-HeaderFieldHeavyWalkingSpeedValue = { Float }
+TagBackHurtAct = { TagBackHurtActKey ~ TagBackHurtActValue }
+TagBackHurtActKey = _{ "backhurtact:" }
+TagBackHurtActValue = { Int }
 
-HeaderFieldHeavyWalkingSpeedz = { HeaderFieldHeavyWalkingSpeedzKey ~ HeaderFieldHeavyWalkingSpeedzValue }
-HeaderFieldHeavyWalkingSpeedzKey = _{ "heavy_walking_speedz" }
-HeaderFieldHeavyWalkingSpeedzValue = { Float }
+TagCatchingAct = { TagCatchingActKey ~ TagCatchingActValue }
+TagCatchingActKey = _{ "catchingact:" }
+TagCatchingActValue = { Int ~ Int? }
 
-HeaderFieldHeavyRunningSpeed = { HeaderFieldHeavyRunningSpeedKey ~ HeaderFieldHeavyRunningSpeedValue }
-HeaderFieldHeavyRunningSpeedKey = _{ "heavy_running_speed" }
-HeaderFieldHeavyRunningSpeedValue = { Float }
+TagCaughtAct = { TagCaughtActKey ~ TagCaughtActValue }
+TagCaughtActKey = _{ "caughtact:" }
+TagCaughtActValue = { Int ~ Int? }
 
-HeaderFieldHeavyRunningSpeedz = { HeaderFieldHeavyRunningSpeedzKey ~ HeaderFieldHeavyRunningSpeedzValue }
-HeaderFieldHeavyRunningSpeedzKey = _{ "heavy_running_speedz" }
-HeaderFieldHeavyRunningSpeedzValue = { Float }
+TagCenterX = { TagCenterXKey ~ TagCenterXValue }
+TagCenterXKey = _{ "centerx:" }
+TagCenterXValue = { Int }
 
-HeaderFieldJumpHeight = { HeaderFieldJumpHeightKey ~ HeaderFieldJumpHeightValue }
-HeaderFieldJumpHeightKey = _{ "jump_height" }
-HeaderFieldJumpHeightValue = { Float }
+TagCenterY = { TagCenterYKey ~ TagCenterYValue }
+TagCenterYKey = _{ "centery:" }
+TagCenterYValue = { Int }
 
-HeaderFieldJumpDistance = { HeaderFieldJumpDistanceKey ~ HeaderFieldJumpDistanceValue }
-HeaderFieldJumpDistanceKey = _{ "jump_distance" }
-HeaderFieldJumpDistanceValue = { Float }
+TagCol = { TagColKey ~ TagColValue }
+TagColKey = _{ "col:" }
+TagColValue = { Uint }
 
-HeaderFieldJumpDistancez = { HeaderFieldJumpDistancezKey ~ HeaderFieldJumpDistancezValue }
-HeaderFieldJumpDistancezKey = _{ "jump_distancez" }
-HeaderFieldJumpDistancezValue = { Float }
+TagCover = { TagCoverKey ~ TagCoverValue }
+TagCoverKey = _{ "cover:" }
+TagCoverValue = { Int }
 
-HeaderFieldDashHeight = { HeaderFieldDashHeightKey ~ HeaderFieldDashHeightValue }
-HeaderFieldDashHeightKey = _{ "dash_height" }
-HeaderFieldDashHeightValue = { Float }
+TagDVx = { TagDVxKey ~ TagDVxValue }
+TagDVxKey = _{ "dvx:" }
+TagDVxValue = { Int }
 
-HeaderFieldDashDistance = { HeaderFieldDashDistanceKey ~ HeaderFieldDashDistanceValue }
-HeaderFieldDashDistanceKey = _{ "dash_distance" }
-HeaderFieldDashDistanceValue = { Float }
+TagDVy = { TagDVyKey ~ TagDVyValue }
+TagDVyKey = _{ "dvy:" }
+TagDVyValue = { Int }
 
-HeaderFieldDashDistancez = { HeaderFieldDashDistancezKey ~ HeaderFieldDashDistancezValue }
-HeaderFieldDashDistancezKey = _{ "dash_distancez" }
-HeaderFieldDashDistancezValue = { Float }
+TagDVz = { TagDVzKey ~ TagDVzValue }
+TagDVzKey = _{ "dvz:" }
+TagDVzValue = { Int }
 
-HeaderFieldRowingHeight = { HeaderFieldRowingHeightKey ~ HeaderFieldRowingHeightValue }
-HeaderFieldRowingHeightKey = _{ "rowing_height" }
-HeaderFieldRowingHeightValue = { Float }
+TagDashDistance = { TagDashDistanceKey ~ TagDashDistanceValue }
+TagDashDistanceKey = _{ "dash_distance" }
+TagDashDistanceValue = { Float }
 
-HeaderFieldRowingDistance = { HeaderFieldRowingDistanceKey ~ HeaderFieldRowingDistanceValue }
-HeaderFieldRowingDistanceKey = _{ "rowing_distance" }
-HeaderFieldRowingDistanceValue = { Float }
+TagDashDistanceZ = { TagDashDistanceZKey ~ TagDashDistanceZValue }
+TagDashDistanceZKey = _{ "dash_distancez" }
+TagDashDistanceZValue = { Float }
+
+TagDashHeight = { TagDashHeightKey ~ TagDashHeightValue }
+TagDashHeightKey = _{ "dash_height" }
+TagDashHeightValue = { Float }
+
+TagDecrease = { TagDecreaseKey ~ TagDecreaseValue }
+TagDecreaseKey = _{ "decrease:" }
+TagDecreaseValue = { Int }
+
+TagDirControl = { TagDirControlKey ~ TagDirControlValue }
+TagDirControlKey = _{ "dircontrol:" }
+TagDirControlValue = { Int }
+
+TagEffect = { TagEffectKey ~ TagEffectValue }
+TagEffectKey = _{ "effect:" }
+TagEffectValue = { Uint }
+
+TagFacing = { TagFacingKey ~ TagFacingValue }
+TagFacingKey = _{ "facing:" }
+TagFacingValue = { Int }
+
+TagFall = { TagFallKey ~ TagFallValue }
+TagFallKey = _{ "fall:" }
+TagFallValue = { Int }
+
+TagFile = _{ TagFileKey ~ TagFileValue }
+TagFileKey = _{ "file" ~ TagFileNumber? ~ ":" }
+TagFileNumber = _{ "(" ~ ASCII_DIGIT+ ~ ("-" ~ ASCII_DIGIT+)? ~ ")" }
+TagFileValue = { Path }
+
+TagFrontHurtAct = { TagFrontHurtActKey ~ TagFrontHurtActValue }
+TagFrontHurtActKey = _{ "fronthurtact:" }
+TagFrontHurtActValue = { Int }
+
+TagH = { TagHKey ~ TagHValue }
+TagHKey = _{ "h:" }
+TagHValue = { Uint }
+
+TagHead = { TagHeadKey ~ TagHeadValue }
+TagHeadKey = _{ "head:" }
+TagHeadValue = { Path }
+
+TagHeavyRunningSpeed = { TagHeavyRunningSpeedKey ~ TagHeavyRunningSpeedValue }
+TagHeavyRunningSpeedKey = _{ "heavy_running_speed" }
+TagHeavyRunningSpeedValue = { Float }
+
+TagHeavyRunningSpeedZ = { TagHeavyRunningSpeedZKey ~ TagHeavyRunningSpeedZValue }
+TagHeavyRunningSpeedZKey = _{ "heavy_running_speedz" }
+TagHeavyRunningSpeedZValue = { Float }
+
+TagHeavyWalkingSpeed = { TagHeavyWalkingSpeedKey ~ TagHeavyWalkingSpeedValue }
+TagHeavyWalkingSpeedKey = _{ "heavy_walking_speed" }
+TagHeavyWalkingSpeedValue = { Float }
+
+TagHeavyWalkingSpeedZ = { TagHeavyWalkingSpeedZKey ~ TagHeavyWalkingSpeedZValue }
+TagHeavyWalkingSpeedZKey = _{ "heavy_walking_speedz" }
+TagHeavyWalkingSpeedZValue = { Float }
+
+TagHitA = { TagHitAKey ~ TagHitAValue }
+TagHitAKey = _{ "hit_a:" }
+TagHitAValue = { Int }
+
+TagHitD = { TagHitDKey ~ TagHitDValue }
+TagHitDKey = _{ "hit_d:" }
+TagHitDValue = { Int }
+
+TagHitDa = { TagHitDaKey ~ TagHitDaValue }
+TagHitDaKey = _{ "hit_Da:" }
+TagHitDaValue = { Int }
+
+TagHitDj = { TagHitDjKey ~ TagHitDjValue }
+TagHitDjKey = _{ "hit_Dj:" }
+TagHitDjValue = { Int }
+
+TagHitFa = { TagHitFaKey ~ TagHitFaValue }
+TagHitFaKey = _{ "hit_Fa:" }
+TagHitFaValue = { Int }
+
+TagHitFj = { TagHitFjKey ~ TagHitFjValue }
+TagHitFjKey = _{ "hit_Fj:" }
+TagHitFjValue = { Int }
+
+TagHitJ = { TagHitJKey ~ TagHitJValue }
+TagHitJKey = _{ "hit_j:" }
+TagHitJValue = { Int }
+
+TagHitJa = { TagHitJaKey ~ TagHitJaValue }
+TagHitJaKey = _{ "hit_ja:" }
+TagHitJaValue = { Int }
+
+TagHitUa = { TagHitUaKey ~ TagHitUaValue }
+TagHitUaKey = _{ "hit_Ua:" }
+TagHitUaValue = { Int }
+
+TagHitUj = { TagHitUjKey ~ TagHitUjValue }
+TagHitUjKey = _{ "hit_Uj:" }
+TagHitUjValue = { Int }
+
+TagHurtable = { TagHurtableKey ~ TagHurtableValue }
+TagHurtableKey = _{ "hurtable:" }
+TagHurtableValue = { Int }
+
+TagInjury = { TagInjuryKey ~ TagInjuryValue }
+TagInjuryKey = _{ "injury:" }
+TagInjuryValue = { Int }
+
+TagJAction = { TagJActionKey ~ TagJActionValue }
+TagJActionKey = _{ "jaction:" }
+TagJActionValue = { Int }
+
+TagJumpDistance = { TagJumpDistanceKey ~ TagJumpDistanceValue }
+TagJumpDistanceKey = _{ "jump_distance" }
+TagJumpDistanceValue = { Float }
+
+TagJumpDistanceZ = { TagJumpDistanceZKey ~ TagJumpDistanceZValue }
+TagJumpDistanceZKey = _{ "jump_distancez" }
+TagJumpDistanceZValue = { Float }
+
+TagJumpHeight = { TagJumpHeightKey ~ TagJumpHeightValue }
+TagJumpHeightKey = _{ "jump_height" }
+TagJumpHeightValue = { Float }
+
+TagKind = { TagKindKey ~ TagKindValue }
+TagKindKey = _{ "kind:" }
+TagKindValue = { Int }
+
+TagMp = { TagMpKey ~ TagMpValue }
+TagMpKey = _{ "mp:" }
+TagMpValue = { Int }
+
+TagName = { TagNameKey ~ TagNameValue }
+TagNameKey = _{ "name:" }
+TagNameValue = { ObjectName }
+
+TagNext = { TagNextKey ~ TagNextValue }
+TagNextKey = _{ "next:" }
+TagNextValue = { Int }
+
+TagOid = { TagOidKey ~ TagOidValue }
+TagOidKey = _{ "oid:" }
+TagOidValue = { Int }
+
+TagPic = { TagPicKey ~ TagPicValue }
+TagPicKey = _{ "pic:" }
+TagPicValue = { Int }
+
+TagRow = { TagRowKey ~ TagRowValue }
+TagRowKey = _{ "row:" }
+TagRowValue = { Uint }
+
+TagRowingDistance = { TagRowingDistanceKey ~ TagRowingDistanceValue }
+TagRowingDistanceKey = _{ "rowing_distance" }
+TagRowingDistanceValue = { Float }
+
+TagRowingHeight = { TagRowingHeightKey ~ TagRowingHeightValue }
+TagRowingHeightKey = _{ "rowing_height" }
+TagRowingHeightValue = { Float }
+
+TagRunningFrameRate = { TagRunningFrameRateKey ~ TagRunningFrameRateValue }
+TagRunningFrameRateKey = _{ "running_frame_rate" }
+TagRunningFrameRateValue = { Uint }
+
+TagRunningSpeed = { TagRunningSpeedKey ~ TagRunningSpeedValue }
+TagRunningSpeedKey = _{ "running_speed" }
+TagRunningSpeedValue = { Float }
+
+TagRunningSpeedZ = { TagRunningSpeedZKey ~ TagRunningSpeedZValue }
+TagRunningSpeedZKey = _{ "running_speedz" }
+TagRunningSpeedZValue = { Float }
+
+TagSmall = { TagSmallKey ~ TagSmallValue }
+TagSmallKey = _{ "small:" }
+TagSmallValue = { Path }
+
+TagSound = { TagSoundKey ~ TagSoundValue }
+TagSoundKey = _{ "sound:" }
+TagSoundValue = { Path }
+
+TagState = { TagStateKey ~ TagStateValue }
+TagStateKey = _{ "state:" }
+TagStateValue = { Int }
+
+TagTAction = { TagTActionKey ~ TagTActionValue }
+TagTActionKey = _{ "taction:" }
+TagTActionValue = { Int }
+
+TagThrowInjury = { TagThrowInjuryKey ~ TagThrowInjuryValue }
+TagThrowInjuryKey = _{ "throwinjury:" }
+TagThrowInjuryValue = { Int }
+
+TagThrowVx = { TagThrowVxKey ~ TagThrowVxValue }
+TagThrowVxKey = _{ "throwvx:" }
+TagThrowVxValue = { Int }
+
+TagThrowVy = { TagThrowVyKey ~ TagThrowVyValue }
+TagThrowVyKey = _{ "throwvy:" }
+TagThrowVyValue = { Int }
+
+TagThrowVz = { TagThrowVzKey ~ TagThrowVzValue }
+TagThrowVzKey = _{ "throwvz:" }
+TagThrowVzValue = { Int }
+
+TagVAction = { TagVActionKey ~ TagVActionValue }
+TagVActionKey = _{ "vaction:" }
+TagVActionValue = { Int }
+
+TagVRest = { TagVRestKey ~ TagVRestValue }
+TagVRestKey = _{ "vrest:" }
+TagVRestValue = { Int }
+
+TagW = { TagWKey ~ TagWValue }
+TagWKey = _{ "w:" }
+TagWValue = { Uint }
+
+TagWait = { TagWaitKey ~ TagWaitValue }
+TagWaitKey = _{ "wait:" }
+TagWaitValue = { Int }
+
+TagWalkingFrameRate = { TagWalkingFrameRateKey ~ TagWalkingFrameRateValue }
+TagWalkingFrameRateKey = _{ "walking_frame_rate" }
+TagWalkingFrameRateValue = { Uint }
+
+TagWalkingSpeed = { TagWalkingSpeedKey ~ TagWalkingSpeedValue }
+TagWalkingSpeedKey = _{ "walking_speed" }
+TagWalkingSpeedValue = { Float }
+
+TagWalkingSpeedZ = { TagWalkingSpeedZKey ~ TagWalkingSpeedZValue }
+TagWalkingSpeedZKey = _{ "walking_speedz" }
+TagWalkingSpeedZValue = { Float }
+
+TagWeaponAct = { TagWeaponActKey ~ TagWeaponActValue }
+TagWeaponActKey = _{ "weaponact:" }
+TagWeaponActValue = { Int }
+
+TagX = { TagXKey ~ TagXValue }
+TagXKey = _{ "x:" }
+TagXValue = { Int }
+
+TagY = { TagYKey ~ TagYValue }
+TagYKey = _{ "y:" }
+TagYValue = { Int }
+
+TagZWidth = { TagZWidthKey ~ TagZWidthValue }
+TagZWidthKey = _{ "zwidth:" }
+TagZWidthValue = { Uint }
