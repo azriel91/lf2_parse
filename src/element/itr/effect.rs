@@ -57,7 +57,7 @@ pub enum Effect {
     /// * **Effect:** Fire, burning characters are immune to effect 20/21,
     ///   weapons don't fly away.
     /// * **Examples:** "Fire" frames, Firen's Ground-Fire.
-    FireGround = 20,
+    FireNoReburn = 20,
     /// Fire, burning characters are immune to effect 20/21, weapons fly away,
     /// will not hit teammates when combined with `state: 18`.
     ///
@@ -112,7 +112,7 @@ impl FromStr for Effect {
                 3 => Ok(Effect::Ice),
                 4 => Ok(Effect::Reflect),
                 5 => Ok(Effect::Reflects),
-                20 => Ok(Effect::FireGround),
+                20 => Ok(Effect::FireNoReburn),
                 21 => Ok(Effect::FireBreath),
                 22 => Ok(Effect::FireExplode),
                 23 => Ok(Effect::PowerExplode),
