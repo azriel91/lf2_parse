@@ -10,7 +10,7 @@ mod bdy_kind;
 mod bdy_kind_parse_error;
 
 /// Hittable body of the object.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Bdy {
     /// Only used in criminal (type 5) objects.
     ///
@@ -25,9 +25,30 @@ pub struct Bdy {
     pub w: u32,
     /// Height.
     pub h: u32,
+    /// Z Width extends in both directions + 1 center pixel.
+    ///
+    /// `zwidth: 10` means 10 pixels up, 10 pixels down, and one pixel for
+    /// center of the shadow for 21 pixels total.
+    pub z_width: u32,
+}
+
+impl Default for Bdy {
+    fn default() -> Bdy {
+        Bdy {
+            kind: Default::default(),
+            x: Default::default(),
+            y: Default::default(),
+            w: Default::default(),
+            h: Default::default(),
+            z_width: Self::Z_WIDTH_DEFAULT,
+        }
+    }
 }
 
 impl Bdy {
+    /// Default `Z_WIDTH` for `Bdy` volumes.
+    pub const Z_WIDTH_DEFAULT: u32 = 13;
+
     fn parse_tags<'i>(bdy: Bdy, bdy_data_pair: Pair<'i, Rule>) -> Result<Bdy, Error<'i>> {
         bdy_data_pair.into_inner().try_fold(bdy, Bdy::parse_tag)
     }
@@ -50,6 +71,9 @@ impl Bdy {
             Rule::TagY => ObjectDataParser::parse_value(bdy, bdy_tag_pair, Self::parse_y_value)?,
             Rule::TagW => ObjectDataParser::parse_value(bdy, bdy_tag_pair, Self::parse_w_value)?,
             Rule::TagH => ObjectDataParser::parse_value(bdy, bdy_tag_pair, Self::parse_h_value)?,
+            Rule::TagZWidth => {
+                ObjectDataParser::parse_value(bdy, bdy_tag_pair, Self::parse_z_width_value)?
+            }
             _ => bdy,
         };
         Ok(bdy)
@@ -113,6 +137,19 @@ impl Bdy {
                 error,
             })?;
         bdy.h = h;
+        Ok(bdy)
+    }
+
+    fn parse_z_width_value<'i>(mut bdy: Bdy, value_pair: Pair<'i, Rule>) -> Result<Bdy, Error<'i>> {
+        let z_width = value_pair
+            .as_str()
+            .parse()
+            .map_err(|error| Error::ParseInt {
+                field: stringify!(zwidth),
+                value_pair,
+                error,
+            })?;
+        bdy.z_width = z_width;
         Ok(bdy)
     }
 }
