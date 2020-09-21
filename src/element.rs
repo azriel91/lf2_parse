@@ -8,7 +8,7 @@ pub use self::{
     b_point::BPoint,
     bdy::{Bdy, BdyKind, BdyKindParseError},
     c_point::{CPoint, CPointKind, CPointKindParseError},
-    itr::{Effect, EffectParseError, Itr, ItrKind},
+    itr::{Effect, EffectParseError, Itr, ItrKind, ItrKindParseError},
     o_point::{OPoint, OPointFacing, OPointFacingDir, OPointKind, OPointKindParseError},
     w_point::{WPoint, WPointKind, WPointKindParseError},
 };
@@ -45,10 +45,9 @@ impl Element {
             Rule::Bdy => Bdy::try_from(element_pair).map(Self::Bdy),
             Rule::BPoint => BPoint::try_from(element_pair).map(Self::BPoint),
             Rule::CPoint => CPoint::try_from(element_pair).map(Self::CPoint),
-            // Rule::Itr => Itr::try_from(element_pair).map(Self::Itr),
+            Rule::Itr => Itr::try_from(element_pair).map(Self::Itr),
             Rule::OPoint => OPoint::try_from(element_pair).map(Self::OPoint),
             Rule::WPoint => WPoint::try_from(element_pair).map(Self::WPoint),
-            Rule::Itr => return Ok(element),
             _ => Err(Error::Grammar {
                 rules_expected: &[
                     Rule::Bdy,

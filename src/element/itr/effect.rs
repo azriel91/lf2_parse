@@ -93,6 +93,12 @@ pub enum Effect {
     Icicle = 30,
 }
 
+impl Default for Effect {
+    fn default() -> Self {
+        Self::Normal
+    }
+}
+
 impl FromStr for Effect {
     type Err = EffectParseError;
 

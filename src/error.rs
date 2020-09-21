@@ -9,8 +9,8 @@ use std::{
 use pest::iterators::Pair;
 
 use crate::{
-    BdyKindParseError, CPointKindParseError, OPointKindParseError, Rule, StateParseError,
-    WPointKindParseError,
+    BdyKindParseError, CPointKindParseError, EffectParseError, ItrKindParseError,
+    OPointKindParseError, Rule, StateParseError, WPointKindParseError,
 };
 
 #[derive(Debug)]
@@ -44,6 +44,20 @@ pub enum Error<'i> {
         value_pair: Pair<'i, Rule>,
         /// The `CPointKindParseError` from the parse attempt,
         error: CPointKindParseError,
+    },
+    /// A pair failed to parse as an `ItrKind`.
+    ParseItrKind {
+        /// The value that failed to be parsed.
+        value_pair: Pair<'i, Rule>,
+        /// The `ItrKindParseError` from the parse attempt,
+        error: ItrKindParseError,
+    },
+    /// A pair failed to parse as an `Effect`.
+    ParseItrEffect {
+        /// The value that failed to be parsed.
+        value_pair: Pair<'i, Rule>,
+        /// The `EffectParseError` from the parse attempt,
+        error: EffectParseError,
     },
     /// A pair failed to parse as an `OPointKind`.
     ParseOPointKind {
@@ -200,6 +214,24 @@ impl<'i> Display for Error<'i> {
                 write!(
                     f,
                     "Failed to parse `cpoint: kind:` value `{}` at position: `{}:{}`. Error: `{}`.",
+                    value_string, line, col, error
+                )
+            }
+            Self::ParseItrKind { value_pair, error } => {
+                let value_string = value_pair.as_str();
+                let (line, col) = value_pair.as_span().start_pos().line_col();
+                write!(
+                    f,
+                    "Failed to parse `itr: kind:` value `{}` at position: `{}:{}`. Error: `{}`.",
+                    value_string, line, col, error
+                )
+            }
+            Self::ParseItrEffect { value_pair, error } => {
+                let value_string = value_pair.as_str();
+                let (line, col) = value_pair.as_span().start_pos().line_col();
+                write!(
+                    f,
+                    "Failed to parse `itr: effect:` value `{}` at position: `{}:{}`. Error: `{}`.",
                     value_string, line, col, error
                 )
             }

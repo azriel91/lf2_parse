@@ -1,3 +1,7 @@
+use std::str::FromStr;
+
+use crate::ItrKindParseError;
+
 /// Interaction variants.
 ///
 /// See https://lf-empire.de/lf2-empire/data-changing/frame-elements/174-itr-interaction?showall=1
@@ -50,7 +54,7 @@ pub enum ItrKind {
     ///   touches - independant of `wait` and `next`.
     /// * Reacts to both allies and enemies.
     /// * Only interacts with `type: 0` objects.
-    /// * Doesn't have to be used with a special state like `CPoint`.
+    /// * Doesn't have to be used with a special state like `ItrPoint`.
     /// * The character that `itr/kind: 8` "sticks" to is not influenced in any
     ///   way (besides healing).
     ///
@@ -98,4 +102,37 @@ pub enum ItrKind {
     /// Turns characters into ice without using the `effect` tag and lifts up
     /// only weapons.
     WhirlwindIce = 16,
+}
+
+impl Default for ItrKind {
+    fn default() -> Self {
+        Self::Normal
+    }
+}
+
+impl FromStr for ItrKind {
+    type Err = ItrKindParseError;
+
+    fn from_str(s: &str) -> Result<ItrKind, ItrKindParseError> {
+        s.parse::<u32>()
+            .map_err(ItrKindParseError::ParseIntError)
+            .and_then(|value| match value {
+                0 => Ok(ItrKind::Normal),
+                1 => Ok(ItrKind::CatchStunned),
+                2 => Ok(ItrKind::WeaponPick),
+                3 => Ok(ItrKind::CatchForce),
+                4 => Ok(ItrKind::Falling),
+                5 => Ok(ItrKind::WeaponStrength),
+                6 => Ok(ItrKind::SuperPunch),
+                7 => Ok(ItrKind::RollWeaponPick),
+                8 => Ok(ItrKind::HealBall),
+                9 => Ok(ItrKind::ReflectiveShield),
+                10 => Ok(ItrKind::SonataOfDeath),
+                11 => Ok(ItrKind::SonataOfDeath2),
+                14 => Ok(ItrKind::Wall),
+                15 => Ok(ItrKind::WhirlwindWind),
+                16 => Ok(ItrKind::WhirlwindIce),
+                value => Err(ItrKindParseError::InvalidValue(value)),
+            })
+    }
 }
