@@ -6,11 +6,11 @@ use std::{
     path::PathBuf,
 };
 
-use pest::iterators::Pair;
+use pest::iterators::{Pair, Pairs};
 
 use crate::{
     BdyKindParseError, CPointKindParseError, EffectParseError, FrameNumber, ItrKindParseError,
-    OPointKindParseError, Rule, StateParseError, WPointKindParseError,
+    OPointKindParseError, ObjectData, Rule, StateParseError, WPointKindParseError,
 };
 
 #[derive(Debug)]
@@ -34,6 +34,15 @@ pub enum Error<'i> {
         frame_number: FrameNumber,
         /// Parsed `Pair`s of the frames with non-unique frame numbers.
         frame_pairs: Vec<Pair<'i, Rule>>,
+    },
+    /// Expected to parse object data, but got nothing.
+    ObjectDataExpected,
+    /// `ObjectData` is successfully parsed, but there is surplus data.
+    ObjectDataSurplus {
+        /// The successfully parsed `ObjectData`.
+        object_data: ObjectData,
+        /// Additional pairs.
+        surplus_pairs: Pairs<'i, Rule>,
     },
     /// Pest could not parse the input with the object grammar.
     PestError(pest::error::Error<Rule>),
@@ -125,8 +134,6 @@ pub enum Error<'i> {
         /// The string that failed to be parsed into its value type.
         value_pair: Pair<'i, Rule>,
     },
-    /// Unused?
-    ObjectDataExpected(Pair<'i, Rule>),
     /// Frame element was built but returned with `None`.
     ///
     /// If this is reached, there is a bug in the `Element` object data parsing
@@ -227,6 +234,24 @@ impl<'i> Display for Error<'i> {
                 })?;
 
                 writeln!(f)
+            }
+            Self::ObjectDataExpected => {
+                write!(f, "Expected to parse object data, but got nothing.")
+            }
+            Self::ObjectDataSurplus {
+                object_data: _,
+                surplus_pairs,
+            } => {
+                writeln!(
+                    f,
+                    "Object data successfully parsed, but surplus pairs exist. Surplus:"
+                )?;
+
+                writeln!(f)?;
+                writeln!(f, "{}", surplus_pairs)?;
+                writeln!(f)?;
+
+                Ok(())
             }
             Self::PestError(pest_error) => write!(f, "{}", pest_error),
             Self::ParseBdyKind { value_pair, error } => {
@@ -343,15 +368,6 @@ impl<'i> Display for Error<'i> {
                     f,
                     "Failed to parse {} value `{}` at position: `{}:{}`.",
                     field, value_string, line, col
-                )
-            }
-            Self::ObjectDataExpected(pair) => {
-                let rule = pair.as_rule();
-                let (line, col) = pair.as_span().start_pos().line_col();
-                write!(
-                    f,
-                    "Expected object data at position: `{}:{}`, but found: `{:?}`.",
-                    line, col, rule
                 )
             }
             Self::ElementBuildNone(element_pair) => {

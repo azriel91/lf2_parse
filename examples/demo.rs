@@ -9,29 +9,7 @@ use std::{
 };
 
 use lf2_codec::DataDecoder;
-use lf2_parse::{Error as Lf2ParseError, ObjectData, ObjectDataParser, Rule};
-use pest::Parser;
-
-fn parse_object_data<'file>(object_data_str: &'file str) -> Result<(), Lf2ParseError<'file>> {
-    let mut object_data_pairs = ObjectDataParser::parse(Rule::Object, object_data_str)?;
-
-    object_data_pairs.try_for_each::<_, Result<(), Lf2ParseError<'file>>>(|pair| {
-        match pair.as_rule() {
-            Rule::Object => {
-                let object_data = ObjectData::try_from(pair)?;
-                println!(
-                    "Name: {}\nFrames:\n{:#?}",
-                    object_data.header.name, object_data.frames
-                );
-
-                Ok(())
-            }
-            _ => Ok(()),
-        }
-    })?;
-
-    Result::<(), Lf2ParseError>::Ok(())
-}
+use lf2_parse::{Error as Lf2ParseError, ObjectData};
 
 fn run() -> Result<(), Error<'static>> {
     let mut args_os = env::args_os();
@@ -72,8 +50,9 @@ fn run() -> Result<(), Error<'static>> {
         };
 
         // Parse the data.
-        if let Err(e) = parse_object_data(&data_decoded) {
-            println!("{}", e);
+        match ObjectData::try_from(data_decoded.as_str()) {
+            Ok(object_data) => println!("{:#?}", object_data),
+            Err(e) => eprintln!("{}", e),
         }
 
         Result::<(), Error>::Ok(())

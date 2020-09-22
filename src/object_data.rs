@@ -1,6 +1,6 @@
 use std::convert::TryFrom;
 
-use pest::iterators::Pair;
+use pest::{iterators::Pair, Parser};
 
 use crate::{Error, Frames, Header, ObjectDataParser, Rule, SubRuleFn};
 
@@ -30,5 +30,27 @@ impl<'i> TryFrom<Pair<'i, Rule>> for ObjectData {
         ];
 
         ObjectDataParser::parse_as_type(ObjectData::default(), pair, Rule::Object, sub_rule_fns)
+    }
+}
+
+impl<'s> TryFrom<&'s str> for ObjectData {
+    type Error = Error<'s>;
+
+    fn try_from(object_data_str: &'s str) -> Result<Self, Self::Error> {
+        let mut object_data_pairs = ObjectDataParser::parse(Rule::Object, object_data_str)?;
+        let object_data = object_data_pairs
+            .next()
+            .ok_or(Error::ObjectDataExpected)
+            .and_then(ObjectData::try_from)?;
+
+        // We should not have another pair.
+        if object_data_pairs.peek().is_some() {
+            Err(Error::ObjectDataSurplus {
+                object_data,
+                surplus_pairs: object_data_pairs,
+            })
+        } else {
+            Ok(object_data)
+        }
     }
 }
