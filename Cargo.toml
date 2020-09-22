@@ -5,7 +5,9 @@ authors = ["Azriel Hoh <azriel91@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-# lf2_codec = "0.1.0"
 pest = "2.0"
 pest_derive = "2.0"
 tinyvec = { version = "1.0.1", features = ["alloc"] }
+
+[dev-dependencies]
+lf2_codec = "0.1.0"
