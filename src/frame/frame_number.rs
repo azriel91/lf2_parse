@@ -6,7 +6,7 @@ use std::{
 };
 
 /// Represents the frame number.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FrameNumber(pub usize);
 
 impl Deref for FrameNumber {

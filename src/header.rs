@@ -1,17 +1,15 @@
 use std::{convert::TryFrom, path::PathBuf};
 
-use derive_builder::Builder;
 use pest::iterators::Pair;
 
 use crate::{Error, ObjectDataParser, Rule, SpriteFile, SubRuleFn};
 
-#[derive(Builder, Debug, PartialEq)]
-#[builder(pattern = "owned")]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Header {
     pub name: String,
     pub head: PathBuf,
     pub small: PathBuf,
-    pub file: Vec<SpriteFile>,
+    pub sprite_files: Vec<SpriteFile>,
     pub walking_frame_rate: u32,
     pub walking_speed: f32,
     pub walking_speed_z: f32,
@@ -34,20 +32,17 @@ pub struct Header {
 
 impl Header {
     fn parse_tags<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_data_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         header_data_pair
             .into_inner()
-            .try_fold(builder, Header::parse_tag)
+            .try_fold(header, Header::parse_tag)
     }
 
-    fn parse_tag<'i>(
-        builder: HeaderBuilder,
-        header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    fn parse_tag<'i>(header: Header, header_tag_pair: Pair<'i, Rule>) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::HeaderTag,
             &[Self::parse_tag_value as SubRuleFn<_>],
@@ -55,92 +50,88 @@ impl Header {
     }
 
     fn parse_tag_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         match header_tag_pair.as_rule() {
             Rule::TagName => {
-                builder = Self::parse_name(builder, header_tag_pair)?;
+                header = Self::parse_name(header, header_tag_pair)?;
             }
             Rule::TagHead => {
-                builder = Self::parse_head(builder, header_tag_pair)?;
+                header = Self::parse_head(header, header_tag_pair)?;
             }
             Rule::TagSmall => {
-                builder = Self::parse_small(builder, header_tag_pair)?;
+                header = Self::parse_small(header, header_tag_pair)?;
             }
             Rule::SpriteFile => {
-                let file = SpriteFile::try_from(header_tag_pair)?;
-                if let Some(ref mut files) = builder.file {
-                    files.push(file);
-                } else {
-                    builder = builder.file(vec![file]);
-                }
+                let sprite_file = SpriteFile::try_from(header_tag_pair)?;
+                header.sprite_files.push(sprite_file);
             }
             Rule::TagWalkingFrameRate => {
-                builder = Self::parse_walking_frame_rate(builder, header_tag_pair)?;
+                header = Self::parse_walking_frame_rate(header, header_tag_pair)?;
             }
             Rule::TagWalkingSpeed => {
-                builder = Self::parse_walking_speed(builder, header_tag_pair)?;
+                header = Self::parse_walking_speed(header, header_tag_pair)?;
             }
             Rule::TagWalkingSpeedZ => {
-                builder = Self::parse_walking_speed_z(builder, header_tag_pair)?;
+                header = Self::parse_walking_speed_z(header, header_tag_pair)?;
             }
             Rule::TagRunningFrameRate => {
-                builder = Self::parse_running_frame_rate(builder, header_tag_pair)?;
+                header = Self::parse_running_frame_rate(header, header_tag_pair)?;
             }
             Rule::TagRunningSpeed => {
-                builder = Self::parse_running_speed(builder, header_tag_pair)?;
+                header = Self::parse_running_speed(header, header_tag_pair)?;
             }
             Rule::TagRunningSpeedZ => {
-                builder = Self::parse_running_speed_z(builder, header_tag_pair)?;
+                header = Self::parse_running_speed_z(header, header_tag_pair)?;
             }
             Rule::TagHeavyWalkingSpeed => {
-                builder = Self::parse_heavy_walking_speed(builder, header_tag_pair)?;
+                header = Self::parse_heavy_walking_speed(header, header_tag_pair)?;
             }
             Rule::TagHeavyWalkingSpeedZ => {
-                builder = Self::parse_heavy_walking_speed_z(builder, header_tag_pair)?;
+                header = Self::parse_heavy_walking_speed_z(header, header_tag_pair)?;
             }
             Rule::TagHeavyRunningSpeed => {
-                builder = Self::parse_heavy_running_speed(builder, header_tag_pair)?;
+                header = Self::parse_heavy_running_speed(header, header_tag_pair)?;
             }
             Rule::TagHeavyRunningSpeedZ => {
-                builder = Self::parse_heavy_running_speed_z(builder, header_tag_pair)?;
+                header = Self::parse_heavy_running_speed_z(header, header_tag_pair)?;
             }
             Rule::TagJumpHeight => {
-                builder = Self::parse_jump_height(builder, header_tag_pair)?;
+                header = Self::parse_jump_height(header, header_tag_pair)?;
             }
             Rule::TagJumpDistance => {
-                builder = Self::parse_jump_distance(builder, header_tag_pair)?;
+                header = Self::parse_jump_distance(header, header_tag_pair)?;
             }
             Rule::TagJumpDistanceZ => {
-                builder = Self::parse_jump_distance_z(builder, header_tag_pair)?;
+                header = Self::parse_jump_distance_z(header, header_tag_pair)?;
             }
             Rule::TagDashHeight => {
-                builder = Self::parse_dash_height(builder, header_tag_pair)?;
+                header = Self::parse_dash_height(header, header_tag_pair)?;
             }
             Rule::TagDashDistance => {
-                builder = Self::parse_dash_distance(builder, header_tag_pair)?;
+                header = Self::parse_dash_distance(header, header_tag_pair)?;
             }
             Rule::TagDashDistanceZ => {
-                builder = Self::parse_dash_distance_z(builder, header_tag_pair)?;
+                header = Self::parse_dash_distance_z(header, header_tag_pair)?;
             }
             Rule::TagRowingHeight => {
-                builder = Self::parse_rowing_height(builder, header_tag_pair)?;
+                header = Self::parse_rowing_height(header, header_tag_pair)?;
             }
             Rule::TagRowingDistance => {
-                builder = Self::parse_rowing_distance(builder, header_tag_pair)?;
+                header = Self::parse_rowing_distance(header, header_tag_pair)?;
             }
             _ => {}
         }
-        Ok(builder)
+        Ok(header)
     }
 
     fn parse_name<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagName,
             &[Self::parse_name_value as SubRuleFn<_>],
@@ -148,20 +139,20 @@ impl Header {
     }
 
     fn parse_name_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let name = value_pair.as_str().to_string();
-        builder = builder.name(name);
-        Ok(builder)
+        header.name = name;
+        Ok(header)
     }
 
     fn parse_head<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagHead,
             &[Self::parse_head_value as SubRuleFn<_>],
@@ -169,23 +160,23 @@ impl Header {
     }
 
     fn parse_head_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let head = value_pair.as_str().parse().map_err(|_| Error::ParsePath {
             field: stringify!(walking_frame_rate),
             value_pair,
         })?;
-        builder = builder.head(head);
-        Ok(builder)
+        header.head = head;
+        Ok(header)
     }
 
     fn parse_small<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagSmall,
             &[Self::parse_small_value as SubRuleFn<_>],
@@ -193,23 +184,23 @@ impl Header {
     }
 
     fn parse_small_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let small = value_pair.as_str().parse().map_err(|_| Error::ParsePath {
             field: stringify!(walking_frame_rate),
             value_pair,
         })?;
-        builder = builder.small(small);
-        Ok(builder)
+        header.small = small;
+        Ok(header)
     }
 
     fn parse_walking_frame_rate<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagWalkingFrameRate,
             &[Self::parse_walking_frame_rate_value as SubRuleFn<_>],
@@ -217,9 +208,9 @@ impl Header {
     }
 
     fn parse_walking_frame_rate_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let walking_frame_rate = value_pair
             .as_str()
             .parse()
@@ -228,16 +219,16 @@ impl Header {
                 value_pair,
                 error,
             })?;
-        builder = builder.walking_frame_rate(walking_frame_rate);
-        Ok(builder)
+        header.walking_frame_rate = walking_frame_rate;
+        Ok(header)
     }
 
     fn parse_walking_speed<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagWalkingSpeed,
             &[Self::parse_walking_speed_value as SubRuleFn<_>],
@@ -245,9 +236,9 @@ impl Header {
     }
 
     fn parse_walking_speed_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let walking_speed = value_pair
             .as_str()
             .parse()
@@ -256,16 +247,16 @@ impl Header {
                 value_pair,
                 error,
             })?;
-        builder = builder.walking_speed(walking_speed);
-        Ok(builder)
+        header.walking_speed = walking_speed;
+        Ok(header)
     }
 
     fn parse_walking_speed_z<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagWalkingSpeedZ,
             &[Self::parse_walking_speed_z_value as SubRuleFn<_>],
@@ -273,9 +264,9 @@ impl Header {
     }
 
     fn parse_walking_speed_z_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let walking_speed_z = value_pair
             .as_str()
             .parse()
@@ -284,16 +275,16 @@ impl Header {
                 value_pair,
                 error,
             })?;
-        builder = builder.walking_speed_z(walking_speed_z);
-        Ok(builder)
+        header.walking_speed_z = walking_speed_z;
+        Ok(header)
     }
 
     fn parse_running_frame_rate<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagRunningFrameRate,
             &[Self::parse_running_frame_rate_value as SubRuleFn<_>],
@@ -301,9 +292,9 @@ impl Header {
     }
 
     fn parse_running_frame_rate_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let running_frame_rate = value_pair
             .as_str()
             .parse()
@@ -312,16 +303,16 @@ impl Header {
                 value_pair,
                 error,
             })?;
-        builder = builder.running_frame_rate(running_frame_rate);
-        Ok(builder)
+        header.running_frame_rate = running_frame_rate;
+        Ok(header)
     }
 
     fn parse_running_speed<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagRunningSpeed,
             &[Self::parse_running_speed_value as SubRuleFn<_>],
@@ -329,9 +320,9 @@ impl Header {
     }
 
     fn parse_running_speed_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let running_speed = value_pair
             .as_str()
             .parse()
@@ -340,16 +331,16 @@ impl Header {
                 value_pair,
                 error,
             })?;
-        builder = builder.running_speed(running_speed);
-        Ok(builder)
+        header.running_speed = running_speed;
+        Ok(header)
     }
 
     fn parse_running_speed_z<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagRunningSpeedZ,
             &[Self::parse_running_speed_z_value as SubRuleFn<_>],
@@ -357,9 +348,9 @@ impl Header {
     }
 
     fn parse_running_speed_z_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let running_speed_z = value_pair
             .as_str()
             .parse()
@@ -368,16 +359,16 @@ impl Header {
                 value_pair,
                 error,
             })?;
-        builder = builder.running_speed_z(running_speed_z);
-        Ok(builder)
+        header.running_speed_z = running_speed_z;
+        Ok(header)
     }
 
     fn parse_heavy_walking_speed<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagHeavyWalkingSpeed,
             &[Self::parse_heavy_walking_speed_value as SubRuleFn<_>],
@@ -385,9 +376,9 @@ impl Header {
     }
 
     fn parse_heavy_walking_speed_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let heavy_walking_speed =
             value_pair
                 .as_str()
@@ -397,16 +388,16 @@ impl Header {
                     value_pair,
                     error,
                 })?;
-        builder = builder.heavy_walking_speed(heavy_walking_speed);
-        Ok(builder)
+        header.heavy_walking_speed = heavy_walking_speed;
+        Ok(header)
     }
 
     fn parse_heavy_walking_speed_z<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagHeavyWalkingSpeedZ,
             &[Self::parse_heavy_walking_speed_z_value as SubRuleFn<_>],
@@ -414,9 +405,9 @@ impl Header {
     }
 
     fn parse_heavy_walking_speed_z_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let heavy_walking_speed_z =
             value_pair
                 .as_str()
@@ -426,16 +417,16 @@ impl Header {
                     value_pair,
                     error,
                 })?;
-        builder = builder.heavy_walking_speed_z(heavy_walking_speed_z);
-        Ok(builder)
+        header.heavy_walking_speed_z = heavy_walking_speed_z;
+        Ok(header)
     }
 
     fn parse_heavy_running_speed<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagHeavyRunningSpeed,
             &[Self::parse_heavy_running_speed_value as SubRuleFn<_>],
@@ -443,9 +434,9 @@ impl Header {
     }
 
     fn parse_heavy_running_speed_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let heavy_running_speed =
             value_pair
                 .as_str()
@@ -455,16 +446,16 @@ impl Header {
                     value_pair,
                     error,
                 })?;
-        builder = builder.heavy_running_speed(heavy_running_speed);
-        Ok(builder)
+        header.heavy_running_speed = heavy_running_speed;
+        Ok(header)
     }
 
     fn parse_heavy_running_speed_z<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagHeavyRunningSpeedZ,
             &[Self::parse_heavy_running_speed_z_value as SubRuleFn<_>],
@@ -472,9 +463,9 @@ impl Header {
     }
 
     fn parse_heavy_running_speed_z_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let heavy_running_speed_z =
             value_pair
                 .as_str()
@@ -484,16 +475,16 @@ impl Header {
                     value_pair,
                     error,
                 })?;
-        builder = builder.heavy_running_speed_z(heavy_running_speed_z);
-        Ok(builder)
+        header.heavy_running_speed_z = heavy_running_speed_z;
+        Ok(header)
     }
 
     fn parse_jump_height<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagJumpHeight,
             &[Self::parse_jump_height_value as SubRuleFn<_>],
@@ -501,9 +492,9 @@ impl Header {
     }
 
     fn parse_jump_height_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let jump_height = value_pair
             .as_str()
             .parse()
@@ -512,16 +503,16 @@ impl Header {
                 value_pair,
                 error,
             })?;
-        builder = builder.jump_height(jump_height);
-        Ok(builder)
+        header.jump_height = jump_height;
+        Ok(header)
     }
 
     fn parse_jump_distance<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagJumpDistance,
             &[Self::parse_jump_distance_value as SubRuleFn<_>],
@@ -529,9 +520,9 @@ impl Header {
     }
 
     fn parse_jump_distance_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let jump_distance = value_pair
             .as_str()
             .parse()
@@ -540,16 +531,16 @@ impl Header {
                 value_pair,
                 error,
             })?;
-        builder = builder.jump_distance(jump_distance);
-        Ok(builder)
+        header.jump_distance = jump_distance;
+        Ok(header)
     }
 
     fn parse_jump_distance_z<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagJumpDistanceZ,
             &[Self::parse_jump_distance_z_value as SubRuleFn<_>],
@@ -557,9 +548,9 @@ impl Header {
     }
 
     fn parse_jump_distance_z_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let jump_distance_z = value_pair
             .as_str()
             .parse()
@@ -568,16 +559,16 @@ impl Header {
                 value_pair,
                 error,
             })?;
-        builder = builder.jump_distance_z(jump_distance_z);
-        Ok(builder)
+        header.jump_distance_z = jump_distance_z;
+        Ok(header)
     }
 
     fn parse_dash_height<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagDashHeight,
             &[Self::parse_dash_height_value as SubRuleFn<_>],
@@ -585,9 +576,9 @@ impl Header {
     }
 
     fn parse_dash_height_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let dash_height = value_pair
             .as_str()
             .parse()
@@ -596,16 +587,16 @@ impl Header {
                 value_pair,
                 error,
             })?;
-        builder = builder.dash_height(dash_height);
-        Ok(builder)
+        header.dash_height = dash_height;
+        Ok(header)
     }
 
     fn parse_dash_distance<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagDashDistance,
             &[Self::parse_dash_distance_value as SubRuleFn<_>],
@@ -613,9 +604,9 @@ impl Header {
     }
 
     fn parse_dash_distance_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let dash_distance = value_pair
             .as_str()
             .parse()
@@ -624,16 +615,16 @@ impl Header {
                 value_pair,
                 error,
             })?;
-        builder = builder.dash_distance(dash_distance);
-        Ok(builder)
+        header.dash_distance = dash_distance;
+        Ok(header)
     }
 
     fn parse_dash_distance_z<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagDashDistanceZ,
             &[Self::parse_dash_distance_z_value as SubRuleFn<_>],
@@ -641,9 +632,9 @@ impl Header {
     }
 
     fn parse_dash_distance_z_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let dash_distance_z = value_pair
             .as_str()
             .parse()
@@ -652,16 +643,16 @@ impl Header {
                 value_pair,
                 error,
             })?;
-        builder = builder.dash_distance_z(dash_distance_z);
-        Ok(builder)
+        header.dash_distance_z = dash_distance_z;
+        Ok(header)
     }
 
     fn parse_rowing_height<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagRowingHeight,
             &[Self::parse_rowing_height_value as SubRuleFn<_>],
@@ -669,9 +660,9 @@ impl Header {
     }
 
     fn parse_rowing_height_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let rowing_height = value_pair
             .as_str()
             .parse()
@@ -680,16 +671,16 @@ impl Header {
                 value_pair,
                 error,
             })?;
-        builder = builder.rowing_height(rowing_height);
-        Ok(builder)
+        header.rowing_height = rowing_height;
+        Ok(header)
     }
 
     fn parse_rowing_distance<'i>(
-        builder: HeaderBuilder,
+        header: Header,
         header_tag_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            header,
             header_tag_pair,
             Rule::TagRowingDistance,
             &[Self::parse_rowing_distance_value as SubRuleFn<_>],
@@ -697,9 +688,9 @@ impl Header {
     }
 
     fn parse_rowing_distance_value<'i>(
-        mut builder: HeaderBuilder,
+        mut header: Header,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<HeaderBuilder, Error<'i>> {
+    ) -> Result<Header, Error<'i>> {
         let rowing_distance = value_pair
             .as_str()
             .parse()
@@ -708,8 +699,8 @@ impl Header {
                 value_pair,
                 error,
             })?;
-        builder = builder.rowing_distance(rowing_distance);
-        Ok(builder)
+        header.rowing_distance = rowing_distance;
+        Ok(header)
     }
 }
 
@@ -718,11 +709,11 @@ impl<'i> TryFrom<Pair<'i, Rule>> for Header {
 
     fn try_from(pair: Pair<'i, Rule>) -> Result<Self, Self::Error> {
         ObjectDataParser::parse_as_type(
-            HeaderBuilder::default(),
+            Header::default(),
             pair,
             Rule::Header,
             &[Header::parse_tags as SubRuleFn<_>],
         )
-        .and_then(|builder| builder.build().map_err(Error::DataBuildFailed))
+        // TODO: validate header sprite_files
     }
 }
