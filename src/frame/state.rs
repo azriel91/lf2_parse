@@ -1089,6 +1089,8 @@ pub enum State {
     /// This state is used in `broken_weapon.dat`, but it functions the same as
     /// `state: 15` ([`State::Other`]).
     BrokenWeapon = 9999,
+    /// Used during loading.
+    Uninitialized,
 }
 
 impl FromStr for State {

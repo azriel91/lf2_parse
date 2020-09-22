@@ -1,12 +1,10 @@
 use std::{convert::TryFrom, path::PathBuf};
 
-use derive_builder::Builder;
 use pest::iterators::Pair;
 
 use crate::{Error, ObjectDataParser, Rule, SubRuleFn};
 
-#[derive(Builder, Debug, PartialEq)]
-#[builder(pattern = "owned")]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct SpriteFile {
     path: PathBuf,
     w: u32,
@@ -17,11 +15,11 @@ pub struct SpriteFile {
 
 impl SpriteFile {
     fn parse_path<'i>(
-        builder: SpriteFileBuilder,
+        sprite_file: SpriteFile,
         path_pair: Pair<'i, Rule>,
-    ) -> Result<SpriteFileBuilder, Error<'i>> {
+    ) -> Result<SpriteFile, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            sprite_file,
             path_pair,
             Rule::TagFileValue,
             &[Self::parse_path_value as SubRuleFn<_>],
@@ -29,23 +27,23 @@ impl SpriteFile {
     }
 
     fn parse_path_value<'i>(
-        mut builder: SpriteFileBuilder,
+        mut sprite_file: SpriteFile,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<SpriteFileBuilder, Error<'i>> {
+    ) -> Result<SpriteFile, Error<'i>> {
         let path = value_pair.as_str().parse().map_err(|_| Error::ParsePath {
             field: stringify!(path),
             value_pair,
         })?;
-        builder = builder.path(path);
-        Ok(builder)
+        sprite_file.path = path;
+        Ok(sprite_file)
     }
 
     fn parse_w<'i>(
-        builder: SpriteFileBuilder,
+        sprite_file: SpriteFile,
         w_pair: Pair<'i, Rule>,
-    ) -> Result<SpriteFileBuilder, Error<'i>> {
+    ) -> Result<SpriteFile, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            sprite_file,
             w_pair,
             Rule::TagW,
             &[Self::parse_w_value as SubRuleFn<_>],
@@ -53,9 +51,9 @@ impl SpriteFile {
     }
 
     fn parse_w_value<'i>(
-        mut builder: SpriteFileBuilder,
+        mut sprite_file: SpriteFile,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<SpriteFileBuilder, Error<'i>> {
+    ) -> Result<SpriteFile, Error<'i>> {
         let w = value_pair
             .as_str()
             .parse()
@@ -64,16 +62,16 @@ impl SpriteFile {
                 value_pair,
                 error,
             })?;
-        builder = builder.w(w);
-        Ok(builder)
+        sprite_file.w = w;
+        Ok(sprite_file)
     }
 
     fn parse_h<'i>(
-        builder: SpriteFileBuilder,
+        sprite_file: SpriteFile,
         h_pair: Pair<'i, Rule>,
-    ) -> Result<SpriteFileBuilder, Error<'i>> {
+    ) -> Result<SpriteFile, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            sprite_file,
             h_pair,
             Rule::TagH,
             &[Self::parse_h_value as SubRuleFn<_>],
@@ -81,9 +79,9 @@ impl SpriteFile {
     }
 
     fn parse_h_value<'i>(
-        mut builder: SpriteFileBuilder,
+        mut sprite_file: SpriteFile,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<SpriteFileBuilder, Error<'i>> {
+    ) -> Result<SpriteFile, Error<'i>> {
         let h = value_pair
             .as_str()
             .parse()
@@ -92,16 +90,16 @@ impl SpriteFile {
                 value_pair,
                 error,
             })?;
-        builder = builder.h(h);
-        Ok(builder)
+        sprite_file.h = h;
+        Ok(sprite_file)
     }
 
     fn parse_row<'i>(
-        builder: SpriteFileBuilder,
+        sprite_file: SpriteFile,
         row_pair: Pair<'i, Rule>,
-    ) -> Result<SpriteFileBuilder, Error<'i>> {
+    ) -> Result<SpriteFile, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            sprite_file,
             row_pair,
             Rule::TagRow,
             &[Self::parse_row_value as SubRuleFn<_>],
@@ -109,9 +107,9 @@ impl SpriteFile {
     }
 
     fn parse_row_value<'i>(
-        mut builder: SpriteFileBuilder,
+        mut sprite_file: SpriteFile,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<SpriteFileBuilder, Error<'i>> {
+    ) -> Result<SpriteFile, Error<'i>> {
         let row = value_pair
             .as_str()
             .parse()
@@ -120,16 +118,16 @@ impl SpriteFile {
                 value_pair,
                 error,
             })?;
-        builder = builder.row(row);
-        Ok(builder)
+        sprite_file.row = row;
+        Ok(sprite_file)
     }
 
     fn parse_col<'i>(
-        builder: SpriteFileBuilder,
+        sprite_file: SpriteFile,
         col_pair: Pair<'i, Rule>,
-    ) -> Result<SpriteFileBuilder, Error<'i>> {
+    ) -> Result<SpriteFile, Error<'i>> {
         ObjectDataParser::parse_as_type(
-            builder,
+            sprite_file,
             col_pair,
             Rule::TagCol,
             &[Self::parse_col_value as SubRuleFn<_>],
@@ -137,9 +135,9 @@ impl SpriteFile {
     }
 
     fn parse_col_value<'i>(
-        mut builder: SpriteFileBuilder,
+        mut sprite_file: SpriteFile,
         value_pair: Pair<'i, Rule>,
-    ) -> Result<SpriteFileBuilder, Error<'i>> {
+    ) -> Result<SpriteFile, Error<'i>> {
         let col = value_pair
             .as_str()
             .parse()
@@ -148,8 +146,8 @@ impl SpriteFile {
                 value_pair,
                 error,
             })?;
-        builder = builder.col(col);
-        Ok(builder)
+        sprite_file.col = col;
+        Ok(sprite_file)
     }
 }
 
@@ -157,8 +155,8 @@ impl<'i> TryFrom<Pair<'i, Rule>> for SpriteFile {
     type Error = Error<'i>;
 
     fn try_from(pair: Pair<'i, Rule>) -> Result<Self, Self::Error> {
-        ObjectDataParser::parse_as_type::<'i, '_>(
-            SpriteFileBuilder::default(),
+        ObjectDataParser::parse_as_type(
+            SpriteFile::default(),
             pair,
             Rule::SpriteFile,
             &[
@@ -169,6 +167,5 @@ impl<'i> TryFrom<Pair<'i, Rule>> for SpriteFile {
                 Self::parse_col,
             ],
         )
-        .and_then(|builder| builder.build().map_err(Error::DataBuildFailed))
     }
 }

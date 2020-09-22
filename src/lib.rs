@@ -12,7 +12,7 @@ pub use crate::{
     frames::Frames,
     header::Header,
     object_data::ObjectData,
-    object_data_parser::{ObjectDataParser, Rule, SubRuleFn},
+    object_data_parser::{ObjectDataParser, Rule, SubRuleFn, SubRuleWrapper},
     object_id::ObjectId,
     sprite_file::SpriteFile,
     weapon_strength::WeaponStrength,

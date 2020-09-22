@@ -9,7 +9,7 @@ use std::{
 use pest::iterators::Pair;
 
 use crate::{
-    BdyKindParseError, CPointKindParseError, EffectParseError, ItrKindParseError,
+    BdyKindParseError, CPointKindParseError, EffectParseError, FrameNumber, ItrKindParseError,
     OPointKindParseError, Rule, StateParseError, WPointKindParseError,
 };
 
@@ -28,6 +28,12 @@ pub enum Error<'i> {
         path: PathBuf,
         /// The `io::Error` returned by the OS.
         io_error: io::Error,
+    },
+    FrameNumberNonUnique {
+        /// `FrameNumber` that is used across multiple frames.
+        frame_number: FrameNumber,
+        /// Parsed `Pair`s of the frames with non-unique frame numbers.
+        frame_pairs: Vec<Pair<'i, Rule>>,
     },
     /// Pest could not parse the input with the object grammar.
     PestError(pest::error::Error<Rule>),
@@ -121,9 +127,6 @@ pub enum Error<'i> {
     },
     /// Unused?
     ObjectDataExpected(Pair<'i, Rule>),
-    /// The `derive_builder::Builder::build()` method failed with the given
-    /// message.
-    DataBuildFailed(String),
     /// Frame element was built but returned with `None`.
     ///
     /// If this is reached, there is a bug in the `Element` object data parsing
@@ -198,6 +201,33 @@ impl<'i> Display for Error<'i> {
                 path.display(),
                 io_error
             ),
+            Self::FrameNumberNonUnique {
+                frame_number,
+                frame_pairs,
+            } => {
+                write!(
+                    f,
+                    "Frame numbers must only be used once,\n\
+                    but `{}` is used multiple times:
+                    \n",
+                    frame_number,
+                )?;
+
+                frame_pairs.iter().try_for_each(|frame_pair| {
+                    write!(f, "- ")?;
+
+                    if let Some(frame_first_line) = frame_pair.as_str().lines().next() {
+                        write!(f, "`{}` ", frame_first_line)?;
+                    }
+
+                    let (line, col) = frame_pair.as_span().start_pos().line_col();
+                    writeln!(f, "at position `{}:{}`", line, col)?;
+
+                    Ok(())
+                })?;
+
+                writeln!(f)
+            }
             Self::PestError(pest_error) => write!(f, "{}", pest_error),
             Self::ParseBdyKind { value_pair, error } => {
                 let value_string = value_pair.as_str();
@@ -324,7 +354,6 @@ impl<'i> Display for Error<'i> {
                     line, col, rule
                 )
             }
-            Self::DataBuildFailed(message) => write!(f, "{}", message),
             Self::ElementBuildNone(element_pair) => {
                 let element_str = element_pair.as_str();
                 let (line, col) = element_pair.as_span().start_pos().line_col();
