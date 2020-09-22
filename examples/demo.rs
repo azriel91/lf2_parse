@@ -39,6 +39,10 @@ fn run() -> Result<(), Error<'static>> {
     // Skip first argument, which tends to be the application name.
     args_os.next();
 
+    if args_os.len() == 0 {
+        print_help();
+    }
+
     args_os.try_for_each(|arg_os| {
         // Open the file.
         let path = AsRef::<Path>::as_ref(&arg_os);
@@ -80,9 +84,25 @@ fn run() -> Result<(), Error<'static>> {
 
 fn main() -> Result<(), Error<'static>> {
     if let Err(e) = run() {
+        print_help();
+
         eprintln!("{}", e);
     }
     Ok(())
+}
+
+fn print_help() {
+    eprintln!(
+        "\
+        Usage: ./demo [<object.dat | object.txt> ..] \n\
+        \n\
+        Examples:\n\
+        \n\
+            ./demo object.dat\n\
+            ./demo object.txt\n\
+            ./demo object.dat object.txt\n\
+        "
+    );
 }
 
 #[derive(Debug)]
