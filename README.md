@@ -37,3 +37,11 @@ fn main() -> Result<(), Error<'static>> {
 }
 
 ```
+
+## License
+
+Licensed the [Zlib license](LICENSE-ZLIB.md).
+
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be licensed as above, without any additional terms or conditions.
