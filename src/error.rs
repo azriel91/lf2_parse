@@ -4,8 +4,10 @@ use std::{
     io,
     num::{ParseFloatError, ParseIntError},
     path::PathBuf,
+    string::FromUtf8Error,
 };
 
+use lf2_codec::{DecodeError, EncodeError};
 use pest::iterators::{Pair, Pairs};
 
 use crate::{
@@ -15,6 +17,16 @@ use crate::{
 
 #[derive(Debug)]
 pub enum Error<'i> {
+    /// Error while decoding a data file.
+    DecodeError {
+        /// Underlying `DecodeError`.
+        error: DecodeError,
+    },
+    /// Error while decoding a data file.
+    EncodeError {
+        /// Underlying `EncodeError`.
+        error: EncodeError,
+    },
     /// Failed to open data file from the file system.
     FileOpenError {
         /// Path that was attempted to be opened as a file.
@@ -35,6 +47,8 @@ pub enum Error<'i> {
         /// Parsed `Pair`s of the frames with non-unique frame numbers.
         frame_pairs: Vec<Pair<'i, Rule>>,
     },
+    /// Data file is not valid UTF8.
+    DecodedDataInvalidUtf8(FromUtf8Error),
     /// Expected to parse object data, but got nothing.
     ObjectDataExpected,
     /// `ObjectData` is successfully parsed, but there is surplus data.
@@ -191,11 +205,31 @@ impl<'i> From<pest::error::Error<Rule>> for Error<'i> {
     }
 }
 
+impl<'e> From<FromUtf8Error> for Error<'e> {
+    fn from(e: FromUtf8Error) -> Self {
+        Self::DecodedDataInvalidUtf8(e)
+    }
+}
+
+impl<'e> From<DecodeError> for Error<'e> {
+    fn from(error: DecodeError) -> Self {
+        Self::DecodeError { error }
+    }
+}
+
+impl<'e> From<EncodeError> for Error<'e> {
+    fn from(error: EncodeError) -> Self {
+        Self::EncodeError { error }
+    }
+}
+
 impl<'i> std::error::Error for Error<'i> {}
 
 impl<'i> Display for Error<'i> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            Self::DecodeError { error } => write!(f, "{}", error),
+            Self::EncodeError { error } => write!(f, "{}", error),
             Self::FileOpenError { path, io_error } => write!(
                 f,
                 "Failed to open file: `{}`. Error: {}",
@@ -214,8 +248,7 @@ impl<'i> Display for Error<'i> {
             } => {
                 write!(
                     f,
-                    "Frame numbers must only be used once,\n\
-                    but `{}` is used multiple times:
+                    "Frame numbers must only be used once, but `{}` is used multiple times:
                     \n",
                     frame_number,
                 )?;
@@ -234,6 +267,11 @@ impl<'i> Display for Error<'i> {
                 })?;
 
                 writeln!(f)
+            }
+            Self::DecodedDataInvalidUtf8(e) => {
+                writeln!(f, "Decoded object data is not valid UTF8.\n\
+                    Try redownloading the object. If it doesn't work, then it likely cannot be used.\n\
+                    Underlying error: {}", e)
             }
             Self::ObjectDataExpected => {
                 write!(f, "Expected to parse object data, but got nothing.")
