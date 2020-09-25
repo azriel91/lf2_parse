@@ -4,17 +4,29 @@ use std::{
     io,
     num::{ParseFloatError, ParseIntError},
     path::PathBuf,
+    string::FromUtf8Error,
 };
 
-use pest::iterators::Pair;
+use lf2_codec::{DecodeError, EncodeError};
+use pest::iterators::{Pair, Pairs};
 
 use crate::{
     BdyKindParseError, CPointKindParseError, EffectParseError, FrameNumber, ItrKindParseError,
-    OPointKindParseError, Rule, StateParseError, WPointKindParseError,
+    OPointKindParseError, ObjectData, Rule, StateParseError, WPointKindParseError,
 };
 
 #[derive(Debug)]
 pub enum Error<'i> {
+    /// Error while decoding a data file.
+    DecodeError {
+        /// Underlying `DecodeError`.
+        error: DecodeError,
+    },
+    /// Error while decoding a data file.
+    EncodeError {
+        /// Underlying `EncodeError`.
+        error: EncodeError,
+    },
     /// Failed to open data file from the file system.
     FileOpenError {
         /// Path that was attempted to be opened as a file.
@@ -34,6 +46,17 @@ pub enum Error<'i> {
         frame_number: FrameNumber,
         /// Parsed `Pair`s of the frames with non-unique frame numbers.
         frame_pairs: Vec<Pair<'i, Rule>>,
+    },
+    /// Data file is not valid UTF8.
+    DecodedDataInvalidUtf8(FromUtf8Error),
+    /// Expected to parse object data, but got nothing.
+    ObjectDataExpected,
+    /// `ObjectData` is successfully parsed, but there is surplus data.
+    ObjectDataSurplus {
+        /// The successfully parsed `ObjectData`.
+        object_data: ObjectData,
+        /// Additional pairs.
+        surplus_pairs: Pairs<'i, Rule>,
     },
     /// Pest could not parse the input with the object grammar.
     PestError(pest::error::Error<Rule>),
@@ -125,8 +148,6 @@ pub enum Error<'i> {
         /// The string that failed to be parsed into its value type.
         value_pair: Pair<'i, Rule>,
     },
-    /// Unused?
-    ObjectDataExpected(Pair<'i, Rule>),
     /// Frame element was built but returned with `None`.
     ///
     /// If this is reached, there is a bug in the `Element` object data parsing
@@ -184,11 +205,31 @@ impl<'i> From<pest::error::Error<Rule>> for Error<'i> {
     }
 }
 
+impl<'e> From<FromUtf8Error> for Error<'e> {
+    fn from(e: FromUtf8Error) -> Self {
+        Self::DecodedDataInvalidUtf8(e)
+    }
+}
+
+impl<'e> From<DecodeError> for Error<'e> {
+    fn from(error: DecodeError) -> Self {
+        Self::DecodeError { error }
+    }
+}
+
+impl<'e> From<EncodeError> for Error<'e> {
+    fn from(error: EncodeError) -> Self {
+        Self::EncodeError { error }
+    }
+}
+
 impl<'i> std::error::Error for Error<'i> {}
 
 impl<'i> Display for Error<'i> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            Self::DecodeError { error } => write!(f, "{}", error),
+            Self::EncodeError { error } => write!(f, "{}", error),
             Self::FileOpenError { path, io_error } => write!(
                 f,
                 "Failed to open file: `{}`. Error: {}",
@@ -207,8 +248,7 @@ impl<'i> Display for Error<'i> {
             } => {
                 write!(
                     f,
-                    "Frame numbers must only be used once,\n\
-                    but `{}` is used multiple times:
+                    "Frame numbers must only be used once, but `{}` is used multiple times:
                     \n",
                     frame_number,
                 )?;
@@ -227,6 +267,29 @@ impl<'i> Display for Error<'i> {
                 })?;
 
                 writeln!(f)
+            }
+            Self::DecodedDataInvalidUtf8(e) => {
+                writeln!(f, "Decoded object data is not valid UTF8.\n\
+                    Try redownloading the object. If it doesn't work, then it likely cannot be used.\n\
+                    Underlying error: {}", e)
+            }
+            Self::ObjectDataExpected => {
+                write!(f, "Expected to parse object data, but got nothing.")
+            }
+            Self::ObjectDataSurplus {
+                object_data: _,
+                surplus_pairs,
+            } => {
+                writeln!(
+                    f,
+                    "Object data successfully parsed, but surplus pairs exist. Surplus:"
+                )?;
+
+                writeln!(f)?;
+                writeln!(f, "{}", surplus_pairs)?;
+                writeln!(f)?;
+
+                Ok(())
             }
             Self::PestError(pest_error) => write!(f, "{}", pest_error),
             Self::ParseBdyKind { value_pair, error } => {
@@ -343,15 +406,6 @@ impl<'i> Display for Error<'i> {
                     f,
                     "Failed to parse {} value `{}` at position: `{}:{}`.",
                     field, value_string, line, col
-                )
-            }
-            Self::ObjectDataExpected(pair) => {
-                let rule = pair.as_rule();
-                let (line, col) = pair.as_span().start_pos().line_col();
-                write!(
-                    f,
-                    "Expected object data at position: `{}:{}`, but found: `{:?}`.",
-                    line, col, rule
                 )
             }
             Self::ElementBuildNone(element_pair) => {
